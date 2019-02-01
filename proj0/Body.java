@@ -11,7 +11,7 @@ public class Body{
 	public double yyVel; 
 	public double mass; 
 	public String imgFileName; 
-	public final double G_CONSTANT = 6.67e-11; 
+	private final double G_CONSTANT = 6.67e-11; 
 
 	public Body(double xP, double yP, double xV,
 		        double yV, double m, String img) {
