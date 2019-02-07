@@ -53,7 +53,6 @@ public class LinkedListDeque<T> {
      */
     public void addFirst(T item) {
         sentinel.next = new Node(item, sentinel.next, sentinel);
-        // linking the older sentinel.next.prev to the newly created sentinel.next
         sentinel.next.next.prev = sentinel.next;
         size += 1;
     }
@@ -63,11 +62,6 @@ public class LinkedListDeque<T> {
      * @param item element to be added
      */
     public void addLast(T item) {
-        /*
-        sentinel.prev.next = new Node(item, sentinel, sentinel.prev);
-        // linking the older sentinel.next.prev to the newly created sentinel.next
-        sentinel.prev = sentinel.prev.next;
-        size += 1;*/
         sentinel.prev = new Node(item, sentinel, sentinel.prev);
         sentinel.prev.prev.next = sentinel.prev;
         size += 1;
@@ -123,7 +117,14 @@ public class LinkedListDeque<T> {
      * @return the removed item
      */
     public T removeFirst() {
-        return null;
+        if (isEmpty()) {
+            return null;
+        }
+        Node firstItem = sentinel.next;
+        sentinel.next = sentinel.next.next;
+        sentinel.next.prev = sentinel;
+        size -= 1;
+        return firstItem.item;
     }
 
     /**
@@ -132,7 +133,14 @@ public class LinkedListDeque<T> {
      * @return the removed item
      */
     public T removeLast() {
-        return null;
+        if (isEmpty()) {
+            return null;
+        }
+        Node lastItem = sentinel.prev;
+        sentinel.prev = sentinel.prev.prev;
+        sentinel.prev.next = sentinel;
+        size -= 1;
+        return lastItem.item;
     }
 
     /**
@@ -143,7 +151,15 @@ public class LinkedListDeque<T> {
      * @return the item
      */
     public T get(int index) {
-        return null;
+        if (isEmpty() || (index < 0) || (index >= size)) {
+            return null;
+        }
+        Node retrievedItem = sentinel.next;
+        while (index != 0) {
+            retrievedItem = retrievedItem.next;
+            index -= 1;
+        }
+        return retrievedItem.item;
     }
 
     /**
@@ -154,6 +170,16 @@ public class LinkedListDeque<T> {
      * @return the item
      */
     public T getRecursive(int index) {
-        return null;
+        if (isEmpty() || (index < 0) || (index >= size)) {
+            return null;
+        }
+        return getRHelper(sentinel.next, index);
+    }
+
+    private T getRHelper(Node p, int index) {
+        if (index == 0) {
+            return p.item;
+        }
+        return getRHelper(p.next, index - 1);
     }
 }
