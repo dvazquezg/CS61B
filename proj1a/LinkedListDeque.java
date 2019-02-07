@@ -42,7 +42,7 @@ public class LinkedListDeque<T> {
         // deep copy loop
         Node p = other.sentinel.next; // helper pointer
         while (p != other.sentinel) {
-            addFirst(p.item);
+            addLast(p.item);
             p = p.next;
         }
     }

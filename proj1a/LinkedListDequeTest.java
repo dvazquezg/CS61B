@@ -80,6 +80,8 @@ public class LinkedListDequeTest {
 		lld1.addFirst("front 3");
 		lld1.addFirst("front 2");
 		lld1.addFirst("front 1");
+		lld1.addLast("Last 4");
+		lld1.addLast("Last 5");
 
 		LinkedListDeque<String> lld1copy = new LinkedListDeque<String>(lld1);
 
@@ -194,8 +196,8 @@ public class LinkedListDequeTest {
 	public static void main(String[] args) {
 		System.out.println("Running tests.\n");
 		//addIsEmptySizeTest();
-		//copyTest();
+		copyTest();
 		//addRemoveTest();
-		TestAddRemoveBothSides();
+		//TestAddRemoveBothSides();
 	}
 } 
