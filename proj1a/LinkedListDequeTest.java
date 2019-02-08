@@ -63,7 +63,7 @@ public class LinkedListDequeTest {
 
 		System.out.println("Printing out deque: ");
 		lld1.printDeque();
-		lld1.printDequeBackwards();
+		//lld1.printDequeBackwards();
 
 		printTestStatus(passed);
 
@@ -161,21 +161,21 @@ public class LinkedListDequeTest {
 
 		System.out.println("Printing out deque after adding: ");
 		lld1.printDeque();
-		lld1.printDequeBackwards();
+		//lld1.printDequeBackwards();
 
 		lld1.removeFirst();
 		lld1.removeLast();
 
 		System.out.println("Printing out deque after removing: ");
 		lld1.printDeque();
-		lld1.printDequeBackwards();
+		//lld1.printDequeBackwards();
 
 		lld1.addLast("End");
 		lld1.addFirst("Start");
 
 		System.out.println("Printing out deque after re-adding new elements: ");
 		lld1.printDeque();
-		lld1.printDequeBackwards();
+		//lld1.printDequeBackwards();
 		System.out.println("Size: " + lld1.size());
 
 		System.out.println("item -1 (expected null): " + lld1.get(-1));

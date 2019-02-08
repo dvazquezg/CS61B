@@ -26,7 +26,7 @@ public class ArrayDeque<T> {
      * Creates a deep copy of provided deque.
      * @param other the provided deque
      */
-    public ArrayDeque(ArrayDeque<T> other) {
+    public ArrayDeque(ArrayDeque other) {
         items = (T[]) new Object[other.items.length];
         size = other.size;
         front = other.front;

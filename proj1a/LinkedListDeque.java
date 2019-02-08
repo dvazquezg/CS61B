@@ -37,7 +37,7 @@ public class LinkedListDeque<T> {
      * Creates a deep copy of provided deque.
      * @param other the provided deque
      */
-    public LinkedListDeque(LinkedListDeque<T> other) {
+    public LinkedListDeque(LinkedListDeque other) {
         this(); // call default non-parameter constructor
         // deep copy loop
         Node p = other.sentinel.next; // helper pointer
@@ -102,7 +102,7 @@ public class LinkedListDeque<T> {
      * Once all the items have been printed, print out a new line.
      *
      */
-    public void printDequeBackwards() {
+    private void printDequeBackwards() {
         Node p = sentinel.prev;
         while (p != sentinel) {
             System.out.print(p.item + " ");
