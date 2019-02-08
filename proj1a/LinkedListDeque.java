@@ -37,7 +37,7 @@ public class LinkedListDeque<T> {
      * Creates a deep copy of provided deque.
      * @param other the provided deque
      */
-    public LinkedListDeque(LinkedListDeque other) {
+    public LinkedListDeque(LinkedListDeque<T> other) {
         this(); // call default non-parameter constructor
         // deep copy loop
         Node p = other.sentinel.next; // helper pointer
@@ -117,7 +117,7 @@ public class LinkedListDeque<T> {
      * @return the removed item
      */
     public T removeFirst() {
-        if (isEmpty()) {
+        if (size == 0) {
             return null;
         }
         Node firstItem = sentinel.next;
@@ -133,7 +133,7 @@ public class LinkedListDeque<T> {
      * @return the removed item
      */
     public T removeLast() {
-        if (isEmpty()) {
+        if (size == 0) {
             return null;
         }
         Node lastItem = sentinel.prev;
