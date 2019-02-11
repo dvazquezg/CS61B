@@ -28,5 +28,8 @@ public class TestPalindrome {
         assertFalse(palindrome.isPalindrome("daniel"));
         assertFalse(palindrome.isPalindrome("aaahaaaa"));
         assertTrue(palindrome.isPalindrome("flake", oboComparator));
+        assertFalse(palindrome.isPalindrome("Flake", oboComparator));
+        assertTrue(palindrome.isPalindrome("$01#", oboComparator));
+        assertFalse(palindrome.isPalindrome("$%!%$", oboComparator));
     }
 }
