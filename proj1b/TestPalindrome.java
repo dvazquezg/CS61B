@@ -24,6 +24,8 @@ public class TestPalindrome {
         assertTrue(palindrome.isPalindrome(""));
         assertFalse(palindrome.isPalindrome("universe"));
         assertTrue(palindrome.isPalindrome("kayak"));
+        assertFalse(palindrome.isPalindrome("kAyak"));
+        assertTrue(palindrome.isPalindrome("RACECAR"));
         assertTrue(palindrome.isPalindrome("noon"));
         assertFalse(palindrome.isPalindrome("daniel"));
         assertFalse(palindrome.isPalindrome("aaahaaaa"));
@@ -31,5 +33,12 @@ public class TestPalindrome {
         assertFalse(palindrome.isPalindrome("Flake", oboComparator));
         assertTrue(palindrome.isPalindrome("$01#", oboComparator));
         assertFalse(palindrome.isPalindrome("$%!%$", oboComparator));
+        assertTrue(palindrome.isPalindrome("", oboComparator));
+        assertTrue(palindrome.isPalindrome("a", oboComparator));
+        assertTrue(palindrome.isPalindrome("*", oboComparator));
+        assertFalse(palindrome.isPalindrome("NOON", oboComparator));
+        assertFalse(palindrome.isPalindrome("DANIEL", oboComparator));
+        assertTrue(palindrome.isPalindrome("BSTA", oboComparator));
+        assertTrue(palindrome.isPalindrome("FLAKE", oboComparator));
     }
 }
