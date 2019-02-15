@@ -4,27 +4,27 @@ ArrayDeque:
 
 Q: Give an example of at least one idea from the staff solution that would have made your solution better (if any).
 
-A: 
+A: I think we could use the ternary operator like: rear = (rear == 0) ? items.length - 1 : rear - 1; when we are moving backwards.
 
 Q: What's something you felt proud of in your code, if anything?
 
-A:
+A: I felt that my code is as nicer than the solution. I did not as many helper fuctions as the solution and still my code looks neat.
 
 Q: What's something that was particularly inelegant in your code, if anything?
 
-A:
+A: the only inelegant thing of my code is that I did not implemented the wrap-around helper method.
 
 Q: What did you learn by talking to your partner about writing ArrayDeque?
 
-A:
+A: I learned that there are many solutions to solve the same problem.
 
 Q: What do you wish you would have known before writing ArrayDeque, if anything?
 
-A:
+A: The only thing that I was insecure about was that when we create a deep copy I was unsure if the elements in the new array must be in the locations in the new array as in the original array. However it does not matter.
 
 Q: If you wrote ArrayDeque again, what would you do differently, if anything?
 
-A:
+A: I could just added the wrap-index function. Everything else is as compact as the soluton.
 
 -----
 
@@ -32,27 +32,27 @@ LinkedListDeque:
 
 Q: Give an example of at least one idea from the staff solution that would have made your solution better (if any).
 
-A: 
+A: I have a very similar solution to the staff solutions. I think it will be really tricky to makethis solution significantly better. 
 
 Q: What's something you felt proud of in your code, if anything?
 
-A:
+A: I feel that that now I can undertand how pointer works and the implementation of this LinkedListDeque strengthened my understanding. Therefeore, the cody that I wrote is clear, shot and simple.
 
 Q: What's something that was particularly inelegant in your code, if anything?
 
-A:
+A: I think that I have a couple of places where I have the following conditon:  if (isEmpty() || (index < 0) || (index >= size)) {} This could implemented into a helper method so I do not repeat myself.
 
 Q: What did you learn by talking to your partner about writing LinkedListDeque?
 
-A:
+A: That sometimes the basic approach is the best approach. Aviding to  overcomplicate the code and writting code that is self-explanatory is the way to go.
 
 Q: What do you wish you would have known before writing LinkedListDeque, if anything?
 
-A:
+A: Since we wrote the SinglyLinkedList during lecture there was not much problem writing the code for a DoublyLinkedList.
 
 Q: If you wrote LinkedListDeque again, what would you do differently, if anything?
 
-A:
+A: I belive that I would only do minor changes such as creating an additional helper method for get() to check that the linkedlist if the deque is empty, or if the given index in within a valid value.
 
 -----
 
@@ -60,4 +60,4 @@ Meta:
 
 Q: Did you like this design review process? Anything we should do differently next time?
 
-A: 
+A: I actually enjoyed it! It was fun to learn from other and to give advice. This should be part of all cs classes. After all, we are going to do this kind of peer-to-peer collaborations in the real-word. I would suggest to assign the pairs randomly to guarantee that we are reviewing code from people whom we have no interacted with before.
