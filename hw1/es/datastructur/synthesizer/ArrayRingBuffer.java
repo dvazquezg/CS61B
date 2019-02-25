@@ -1,11 +1,12 @@
 package es.datastructur.synthesizer;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
-//TODO: Make sure to that this class and all of its methods are public
-//TODO: Make sure to add the override tag for all overridden methods
-//TODO: Make sure to make this class implement BoundedQueue<T>
-
-public class ArrayRingBuffer<T>  {
+/**
+ * Implements a bounded (fixed size) queue
+ * @param <T> the type of items stored in the list
+ */
+public class ArrayRingBuffer<T>  implements BoundedQueue<T> {
     /* Index for the next dequeue or peek. */
     private int first;
     /* Index for the next enqueue. */
@@ -19,41 +20,144 @@ public class ArrayRingBuffer<T>  {
      * Create a new ArrayRingBuffer with the given capacity.
      */
     public ArrayRingBuffer(int capacity) {
-        // TODO: Create new array with capacity elements.
-        //       first, last, and fillCount should all be set to 0.
+        // first, last, and fillCount should all be set to 0.
+        rb = (T[]) new Object[capacity];
+        first = 0;
+        last = 0;
+        fillCount = 0;
     }
 
     /**
      * Adds x to the end of the ring buffer. If there is no room, then
      * throw new RuntimeException("Ring buffer overflow").
      */
+    @Override
     public void enqueue(T x) {
-        // TODO: Enqueue the item. Don't forget to increase fillCount and update
-        //       last.
-        return;
+        if (fillCount == rb.length) {
+            throw new RuntimeException("Ring buffer overflow");
+        }
+
+        rb[last] = x;
+        last = nextIndex(last);
+        fillCount += 1;
     }
 
     /**
      * Dequeue oldest item in the ring buffer. If the buffer is empty, then
      * throw new RuntimeException("Ring buffer underflow").
      */
+    @Override
     public T dequeue() {
-        // TODO: Dequeue the first item. Don't forget to decrease fillCount and
-        //       update first.
-        return null;
+        if (fillCount == 0) {
+            throw new RuntimeException("Ring buffer underflow");
+        }
+        T item = rb[first];
+        rb[first] = null; // remove object reference
+        first = nextIndex(first);
+        fillCount -= 1;
+        return item;
     }
 
     /**
      * Return oldest item, but don't remove it. If the buffer is empty, then
      * throw new RuntimeException("Ring buffer underflow").
      */
+    @Override
     public T peek() {
-        // TODO: Return the first item. None of your instance variables should
-        //       change.
-        return null;
+        if (fillCount == 0) {
+            throw new RuntimeException("Ring buffer underflow");
+        }
+        T item = rb[first];
+        return item;
     }
 
-    // TODO: When you get to part 4, implement the needed code to support
-    //       iteration and equals.
+    @Override
+    public int fillCount() {
+        return fillCount;
+    }
+
+    @Override
+    public int capacity() {
+        return rb.length;
+    }
+
+    /**
+     * Returns the correct index value wrapping around the array if necessary.
+     * @param index
+     * @return the correct circular index
+     */
+    private int nextIndex(int index) {
+        return (index == rb.length - 1) ? 0 : index + 1;
+    }
+
+    /**
+     * Returns true if the passed ArrayRing contains the same values as this
+     * @return
+     */
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (this == o) { // good optimization
+            return true;
+        }
+        if (this.getClass() != o.getClass()) {
+            return false;
+        }
+        ArrayRingBuffer other = (ArrayRingBuffer<T>) o;
+        if (this.fillCount() != other.fillCount()) {
+            return false;
+        }
+        if (!this.peek().equals(other.peek())) { // cheap optimization
+            return false;
+        }
+        // iterate over each element in parallel
+        Iterator<T> it1 = this.iterator();
+        Iterator<T> it2 = other.iterator();
+        while (it1.hasNext() && it2.hasNext()) {
+            if (!it1.next().equals(it2.next())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns a new iterator
+     * @return iterator
+     */
+    @Override
+    public Iterator<T> iterator() {
+        return new ArrayRingIterator();
+    }
+
+    /***
+     * Private class that supports iteration
+     * @author Daniel Vazquez Guevara
+     */
+    private class ArrayRingIterator implements Iterator<T> {
+        private int currentIndex;
+        ArrayRingIterator() {
+            currentIndex = first;
+        }
+
+        /**
+         * Checks if there exist more items to iterate over
+         * @return boolean value indicating
+         */
+        public boolean hasNext() {
+            return currentIndex < last; // last points to next available slot
+        }
+
+        /**
+         * Return the next item if available, throws an exception otherwise
+         * @return the item
+         */
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException("No more elements to iterate over.");
+            }
+            return rb[currentIndex++];
+        }
+    }
 }
-    // TODO: Remove all comments that say TODO when you're done.
