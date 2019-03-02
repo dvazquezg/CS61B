@@ -16,7 +16,7 @@ public class UnionFind {
     /* Throws an exception if v1 is not a valid index. */
     private void validate(int vertex) {
         if (vertex < 0 || vertex >= parent.length){
-            throw new ArrayIndexOutOfBoundsException("Invalid index");
+            throw new IllegalArgumentException("Invalid index");
         }
     }
 

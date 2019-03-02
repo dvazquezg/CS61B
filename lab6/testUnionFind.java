@@ -46,7 +46,7 @@ public class testUnionFind {
 
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testValidIndex() {
         UnionFind dset = new UnionFind(16);
         dset.sizeOf(-1);
