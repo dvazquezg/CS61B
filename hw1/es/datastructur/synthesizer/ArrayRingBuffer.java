@@ -137,8 +137,10 @@ public class ArrayRingBuffer<T>  implements BoundedQueue<T> {
      */
     private class ArrayRingIterator implements Iterator<T> {
         private int currentIndex;
+        private int count;
         ArrayRingIterator() {
             currentIndex = first;
+            count = 0 ;
         }
 
         /**
@@ -146,7 +148,7 @@ public class ArrayRingBuffer<T>  implements BoundedQueue<T> {
          * @return boolean value indicating
          */
         public boolean hasNext() {
-            return currentIndex < last; // last points to next available slot
+            return count < fillCount; // last points to next available slot
         }
 
         /**
@@ -157,7 +159,9 @@ public class ArrayRingBuffer<T>  implements BoundedQueue<T> {
             if (!hasNext()) {
                 throw new NoSuchElementException("No more elements to iterate over.");
             }
-            return rb[currentIndex++];
+            currentIndex = nextIndex(currentIndex);
+            count++;
+            return rb[currentIndex];
         }
     }
 }

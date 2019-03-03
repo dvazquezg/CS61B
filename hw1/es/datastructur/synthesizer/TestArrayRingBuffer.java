@@ -66,10 +66,36 @@ public class TestArrayRingBuffer {
         arb3.enqueue(4.2);   // 5.6  6.7 4.2
         arb3.enqueue(9.1);   // 28.0 6.7 4.2  9.1
 
+        ArrayRingBuffer<Double> arb4 = new ArrayRingBuffer<>(4);
+        arb4.enqueue(5.6);    // 5.6
+        arb4.enqueue(6.7);   // 5.6  6.7
+        arb4.enqueue(4.2);   // 5.6  6.7 4.2
+        arb4.enqueue(9.1);   // 5.6 6.7 4.2  9.1
+        arb4.dequeue();         // 6.7 4.2  9.1
+        arb4.dequeue();         // 4.2  9.1
+        arb4.enqueue(3.3);   // 4.2  9.1 3.3
+        arb4.enqueue(1.6);   // 4.2  9.1 3.3 1.6
+
+        ArrayRingBuffer<Double> arb5 = new ArrayRingBuffer<>(4);
+        arb5.enqueue(5.6);    // 5.6
+        arb5.enqueue(6.7);   // 5.6  6.7
+        arb5.enqueue(4.2);   // 5.6  6.7 4.2
+        arb5.enqueue(3.3);   // 6.7 4.2  9.1 3.3
+
+        ArrayRingBuffer<Double> arb6 = new ArrayRingBuffer<>(4);
+        arb6.enqueue(4.2);   //
+        arb6.enqueue(9.1);   //
+        arb6.enqueue(3.3);   //
+        arb6.enqueue(1.6);   //
+
+
+
         assertTrue(arb1.equals(arb2));
         assertTrue(arb1.equals(arb1));
         assertTrue(arb2.equals(arb2));
         assertFalse(arb1.equals(arb3));
+
+        assertTrue(arb4.equals(arb6)); // checks wrap around
     }
 
 }
