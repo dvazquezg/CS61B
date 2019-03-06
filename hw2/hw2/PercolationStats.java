@@ -1,14 +1,56 @@
 package hw2;
+import edu.princeton.cs.introcs.StdRandom;
+import edu.princeton.cs.introcs.StdStats;
 
 public class PercolationStats {
     /**
-     * Performs T independent experiments on an N-by-N grid
-     * @param N
-     * @param T
-     * @param pf
+     * Performs T independent experiments on an N-by-N grid to estimate
+     * the percolation threshold
+     * @param N side size of grid N * N
+     * @param T Number of experiments
+     * @param pf percolation factory
      */
-    public PercolationStats(int N, int T, PercolationFactory pf) {
+    private final int N;
+    private final int T;
+    private double[] experimentThresholds;
+    private int percThreshold;
 
+
+    public PercolationStats(int N, int T, PercolationFactory pf) {
+        if (N <= 0 || T <= 0) {
+            throw new IllegalArgumentException("N and T must be positive integers.");
+        }
+        this.N = N;
+        this.T = T;
+        experimentThresholds = new double[T];
+        MonteCarloSimulation(pf); // Start Simulation
+    }
+
+    /**
+     * Runs the MonteCarlo Simulation by performing T experiments and
+     * storing each experiment threshold into an array
+     * @param pf Percolation Factory object
+     */
+    private void MonteCarloSimulation(PercolationFactory pf){
+        Percolation perc;
+        // loop to run each experiment
+        for (int i = 0; i < T; i++) {
+            perc = pf.make(N); // reset all sites
+            experimentThresholds[i] = expThreshold(perc);
+        }
+    }
+
+    /**
+     * Runs a single experiment. It keeps opening random locations until
+     * the system percolates.
+     * @param perc Percolation Factory object
+     * @return The percolation threshold for the experiment
+     */
+    private double expThreshold(Percolation perc){
+        while (!perc.percolates()) {
+            perc.open(StdRandom.uniform(N), StdRandom.uniform(N));
+        }
+        return (double) perc.numberOfOpenSites() / (N * N);
     }
 
     /**
@@ -16,7 +58,11 @@ public class PercolationStats {
      * @return mean
      */
     public double mean() {
-        return 0.0;
+        double sum = 0.0;
+        for (double xi: experimentThresholds) {
+            sum += xi;
+        }
+        return sum / T;
     }
 
     /**
@@ -24,7 +70,15 @@ public class PercolationStats {
      * @return standard deviation
      */
     public double stddev() {
-        return 0.0;
+        if (T < 2) {
+            return Double.NaN; // stddev is undefined whe there is less than 2 elements
+        }
+        double  mean = mean();
+        double sumOfSquares= 0.0;
+        for (double xi: experimentThresholds) {
+            sumOfSquares += Math.pow( xi - mean, 2);
+        }
+        return sumOfSquares / (T - 1);
     }
 
     /**
@@ -32,7 +86,9 @@ public class PercolationStats {
      * @return confidence
      */
     public double confidenceLow() {
-        return 0.0;
+        double  mean = mean();
+        double  stddev = stddev();
+        return (mean - (1.96 * stddev) / Math.sqrt(T));
     }
 
     /**
@@ -40,6 +96,8 @@ public class PercolationStats {
      * @return
      */
     public double confidenceHigh() {
-        return 0.0;
+        double  mean = mean();
+        double  stddev = stddev();
+        return (mean + (1.96 * stddev) / Math.sqrt(T));
     }
 }
