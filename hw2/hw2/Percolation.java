@@ -30,11 +30,11 @@ public class Percolation {
         topVirtualSite = N * N; // note that grid elements go from 0 to N * N - 1
         bottomVirtualSite = N * N + 1;
         uSetFull = new WeightedQuickUnionUF(N * N + 1); // allocate one virtual cell
-        uSetPerc = new WeightedQuickUnionUF(N * N + 2);// allocate two virtual cells
+        uSetPerc = new WeightedQuickUnionUF(N * N + 2); // allocate two virtual cells
         grid = new boolean[N][N]; // state grid (all false)
 
     }
-    public int conv2DTo1D(int row, int col) {
+    private int conv2DTo1D(int row, int col) {
         validateCell(row, col);
         return (row * N) + col;
     }
@@ -69,7 +69,7 @@ public class Percolation {
         for (int i = 0; i < 4; i++) {
             int rowN = row + rows[i]; // neighbor row
             int colN = col + cols[i]; // neighbor col
-            if(validNeighbor(rowN, colN)) {
+            if (validNeighbor(rowN, colN)) {
                 uSetPerc.union(conv2DTo1D(row, col), conv2DTo1D(rowN, colN));
                 uSetFull.union(conv2DTo1D(row, col), conv2DTo1D(rowN, colN));
             }
@@ -84,7 +84,7 @@ public class Percolation {
      * @param col
      */
     private void connectToVirtual(int row, int col) {
-        if (row == 0){
+        if (row == 0) {
             // connect top row location to top virtual location
             uSetPerc.union(conv2DTo1D(row, col), topVirtualSite);
             uSetFull.union(conv2DTo1D(row, col), topVirtualSite);
@@ -153,7 +153,7 @@ public class Percolation {
      * @param row
      * @param col
      */
-    public void validateCell(int row, int col) {
+    private void validateCell(int row, int col) {
         if (row < 0 || row > (N - 1) || col < 0 || col > (N - 1)) {
             throw new IndexOutOfBoundsException("Invalid position");
         }

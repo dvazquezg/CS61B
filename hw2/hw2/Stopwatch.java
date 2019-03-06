@@ -61,7 +61,7 @@ public class Stopwatch {
      */
     public static void main(String[] args) {
         int N = 20;
-        int T = 30;
+        int T = 10;
         PercolationFactory pf = new PercolationFactory();
 
         Stopwatch timer1 = new Stopwatch(); // Start time

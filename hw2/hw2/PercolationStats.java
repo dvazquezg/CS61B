@@ -1,6 +1,5 @@
 package hw2;
 import edu.princeton.cs.introcs.StdRandom;
-import edu.princeton.cs.introcs.StdStats;
 
 public class PercolationStats {
     /**
@@ -23,7 +22,7 @@ public class PercolationStats {
         this.N = N;
         this.T = T;
         experimentThresholds = new double[T];
-        MonteCarloSimulation(pf); // Start Simulation
+        monteCarloSimulation(pf); // Start Simulation
     }
 
     /**
@@ -31,7 +30,7 @@ public class PercolationStats {
      * storing each experiment threshold into an array
      * @param pf Percolation Factory object
      */
-    private void MonteCarloSimulation(PercolationFactory pf){
+    private void monteCarloSimulation(PercolationFactory pf) {
         Percolation perc;
         // loop to run each experiment
         for (int i = 0; i < T; i++) {
@@ -46,7 +45,7 @@ public class PercolationStats {
      * @param perc Percolation Factory object
      * @return The percolation threshold for the experiment
      */
-    private double expThreshold(Percolation perc){
+    private double expThreshold(Percolation perc) {
         while (!perc.percolates()) {
             perc.open(StdRandom.uniform(N), StdRandom.uniform(N));
         }
@@ -74,11 +73,12 @@ public class PercolationStats {
             return Double.NaN; // stddev is undefined whe there is less than 2 elements
         }
         double  mean = mean();
-        double sumOfSquares= 0.0;
+        double sumOfSquares = 0.0;
         for (double xi: experimentThresholds) {
-            sumOfSquares += Math.pow( xi - mean, 2);
+            sumOfSquares += Math.pow(xi - mean, 2);
         }
-        return sumOfSquares / (T - 1);
+        double stdDevSquared = sumOfSquares / (T - 1);
+        return Math.sqrt(stdDevSquared);
     }
 
     /**
