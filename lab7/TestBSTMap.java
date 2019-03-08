@@ -77,7 +77,21 @@ public class TestBSTMap {
         assertTrue(b.containsKey("hi") && b.get("hi") != null);
     }
 
+    @Test
+    public void print() {
+        BSTMap<String, Integer> b = new BSTMap<String, Integer>();
+        b.put("hi", 4);
+        b.put("daniel", 2);
+        b.put("air", 1);
+        b.put("sushi", 6);
+        b.put("money", 5);
+        b.put("fun", 3);
+        b.put("yeah", 7);
+        System.out.println("BST: ");
+        b.printInOrder();
+    }
+
     public static void main(String[] args) {
-        jh61b.junit.TestRunner.runTests(TestBSTMap.class);
+	    jh61b.junit.TestRunner.runTests(TestBSTMap.class);
     }
 }

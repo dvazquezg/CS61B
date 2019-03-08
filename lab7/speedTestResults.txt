@@ -1,0 +1,39 @@
+This program inserts random Strings of length L
+into different types of maps as <String, Integer> pairs.
+
+Please enter desired length of each string: 12
+
+Enter # strings to insert into the maps: 500
+class ULLMap: 0.01 sec
+class BSTMap: 0.00 sec
+Java's Built-in TreeMap: 0.00 sec
+
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into the maps: 2000
+class ULLMap: 0.02 sec
+class BSTMap: 0.00 sec
+Java's Built-in TreeMap: 0.00 sec
+
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into the maps: 10000
+class ULLMap: 0.36 sec
+class BSTMap: 0.01 sec
+Java's Built-in TreeMap: 0.01 sec
+
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into the maps: 20000
+class ULLMap: 1.56 sec
+class BSTMap: 0.02 sec
+Java's Built-in TreeMap: 0.01 sec
+
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into the maps: 30000
+--Stack Overflow -- couldn't add 30000 strings of length 12.
+class BSTMap: 0.02 sec
+Java's Built-in TreeMap: 0.02 sec
+
+Would you like to try more timed-tests? (y/n)
