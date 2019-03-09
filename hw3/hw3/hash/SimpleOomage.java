@@ -1,7 +1,5 @@
 package hw3.hash;
 import java.awt.Color;
-import java.util.Random;
-
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdDraw;
 
@@ -23,21 +21,19 @@ public class SimpleOomage implements Oomage {
             return false;
         }
         SimpleOomage that = (SimpleOomage) o;
-        return (this.red == that.red) && (this.green == that.green) && (this.blue == that.blue) ;
+        return (this.red == that.red) && (this.green == that.green) && (this.blue == that.blue);
     }
-
 
     @Override
     public int hashCode() {
         if (!USE_PERFECT_HASH) {
             return red + green + blue;
         } else {
-            // TODO: Write a perfect hash function for Simple Oomages.
             //return Objects.hash(red, green, blue);
             int hash = 1;
-            hash = 31 * ((red / 5) * (red + 1) / 5) + hash;
-            hash = 31 * (green / 5) + hash;
-            hash = 31 * (blue / 5) + hash;
+            hash = 31 * (red / 5) + hash;
+            hash = 31 * 31 * (green / 5) + hash;
+            hash = 31 * 31 * 31 * (blue / 5) + hash;
             return hash;
         }
     }
