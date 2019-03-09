@@ -31,9 +31,9 @@ public class SimpleOomage implements Oomage {
         } else {
             //return Objects.hash(red, green, blue);
             int hash = 1;
-            hash = 31 * (red / 5) + hash;
-            hash = 31 * 31 * (green / 5) + hash;
-            hash = 31 * 31 * 31 * (blue / 5) + hash;
+            hash = 31 * hash + (red / 5);
+            hash = 31 * 31 * hash + (green / 5);
+            hash = 31 * 31 * 31 * hash + (blue / 5);
             return hash;
         }
     }
