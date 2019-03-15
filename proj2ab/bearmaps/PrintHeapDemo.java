@@ -13,18 +13,18 @@ public class PrintHeapDemo {
         int level = 0;
         int itemsUntilNext = (int) Math.pow(2, level);
         for (int j = 0; j < depth; j++) {
-            System.out.print(" ");
+            System.out.print("   ");
         }
 
         for (int i = 1; i < heap.length; i++) {
-            System.out.printf("%d ", heap[i]);
+            System.out.print(heap[i] + "   ");
             if (i == itemsUntilNext) {
                 System.out.println();
                 level++;
                 itemsUntilNext += Math.pow(2, level);
                 depth--;
                 for (int j = 0; j < depth; j++) {
-                    System.out.print(" ");
+                    System.out.print("   ");
                 }
             }
         }
