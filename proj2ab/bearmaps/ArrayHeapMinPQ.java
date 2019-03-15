@@ -17,7 +17,6 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
     private ArrayList<PriorityNode<T>> heap;
     private HashMap<T, Integer> map; // map to store item an index
     private final int root = 1; // we offset insertion by 1
-    private int size; // number of items in heap
 
     /**
      * Creates an instance of ArrayHeapPQ
@@ -27,7 +26,6 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
         map = new HashMap<>();
         // skip 1st pos (it allow us to simplify index operations)
         heap.add(new PriorityNode<>(null, -1));
-        size = 0;
     }
 
     /**
@@ -44,10 +42,9 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
             throw new IllegalArgumentException("Item is" + (item == null ? "null" : " in Heap"));
         }
         PriorityNode<T> newNode = new PriorityNode<>(item, priority);
-        size += 1; // increase size
-        map.put(item, size); // add item to map
         heap.add(newNode); // add new node to end of ArrayList
-        swimUp(size); // relocate new node (at location size) to its appropriate location
+        map.put(item, size()); // add item and its index pos into map
+        swimUp(size()); // relocate new node (at location size) to its appropriate location
     }
 
     /**
@@ -72,7 +69,9 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
     private void swap(int index1, int index2) {
         PriorityNode<T> temp = heap.get(index1);
         heap.set(index1, heap.get(index2));
+        map.put(heap.get(index2).getItem(), index1); // update index of item in map
         heap.set(index2, temp);
+        map.put(temp.getItem(), index2); // update index of item in map
     }
 
     /**
@@ -98,7 +97,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      */
     @Override
     public T getSmallest() {
-        if (size == 0) {
+        if (size() == 0) {
             throw new NoSuchElementException("Empty heap");
         }
         return heap.get(1).getItem();
@@ -113,14 +112,13 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      */
     @Override
     public T removeSmallest() {
-        if (size == 0) {
+        if (size() == 0) {
             throw  new NoSuchElementException("Empty heap");
         }
         T smallest = heap.get(root).getItem();
-        swap(root, size);
-        map.remove(heap.get(size).getItem()); // remove item from map
-        heap.remove(size); // remove last node from heap
-        size -= 1; // decrease size
+        swap(root, size());
+        map.remove(heap.get(size()).getItem()); // remove item from map
+        heap.remove(size()); // remove last node from heap
         swimDown(root);
         return smallest;
     }
@@ -135,17 +133,14 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
         double leftCpriority = heap.get(leftChild(index)).getPriority();
         double rightCpriority = heap.get(rightChild(index)).getPriority();
         double parentPriority = heap.get(index).getPriority();
+        double compLeft = Double.compare(leftCpriority, rightCpriority);
 
-        if (leftCpriority < rightCpriority && leftCpriority < parentPriority) {
+        if (compLeft <= 0 && leftCpriority < parentPriority) {
             swap(index, leftChild(index));
             swimDown(leftChild(index)); // recursive call to continue relocating node if necessary
-        } else if (rightCpriority < leftCpriority && leftCpriority < parentPriority) {
+        } else if (compLeft > 0 && rightCpriority < parentPriority) {
             swap(index, rightChild(index));
             swimDown(rightChild(index)); // recursive call to continue relocating node if necessary
-        } else if (leftCpriority == rightCpriority && leftCpriority < parentPriority) {
-            // tie breaker
-            swap(index, leftChild(index));
-            swimDown(leftChild(index));
         }
     }
 
@@ -156,7 +151,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      */
     @Override
     public int size() {
-        return size;
+        return heap.size() - 1; // ignore offset of 1
     }
 
     /** Changes the priority of the given item. Throws NoSuchElementException if
@@ -194,7 +189,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      */
     private int leftChild(int index) {
         int leftC = index * 2;
-        return (leftC > size) ? index : leftC;
+        return (leftC > size()) ? index : leftC;
     }
 
     /**
@@ -206,7 +201,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      */
     private int rightChild(int index) {
         int rightC = index * 2 + 1;
-        return (rightC > size) ? index : rightC;
+        return (rightC > size()) ? index : rightC;
     }
 
     /**
@@ -214,7 +209,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      * Used for debugging purposes
      * @return
      */
-    public T[] getItemArray() {
+    T[] getItemArray() {
         T[] items = (T[]) new Object[heap.size()];
         int i = 0;
         for (PriorityNode<T> node : heap) {
@@ -228,7 +223,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      * Used for debugging purposes
      * @return
      */
-    public Double[] getPriorityArray() {
+    Double[] getPriorityArray() {
         Double[] priorities = new Double[heap.size()];
         int i = 0;
         for (PriorityNode<T> node : heap) {
