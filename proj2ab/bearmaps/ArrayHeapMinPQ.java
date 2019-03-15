@@ -209,7 +209,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      * Used for debugging purposes
      * @return
      */
-    T[] getItemArray() {
+    private T[] getItemArray() {
         T[] items = (T[]) new Object[heap.size()];
         int i = 0;
         for (PriorityNode<T> node : heap) {
@@ -223,7 +223,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      * Used for debugging purposes
      * @return
      */
-    Double[] getPriorityArray() {
+    private Double[] getPriorityArray() {
         Double[] priorities = new Double[heap.size()];
         int i = 0;
         for (PriorityNode<T> node : heap) {
