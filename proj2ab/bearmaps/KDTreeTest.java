@@ -1,5 +1,6 @@
 package bearmaps;
 
+import edu.princeton.cs.algs4.StdRandom;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -160,7 +161,7 @@ public class KDTreeTest {
         ArrayList<Point> points = new ArrayList<>();
         // fill list of random points
         for (int i = 0; i < 1000000; i++) {
-            points.add(randomPoint(-150, 150));
+            points.add(randomPoint(-500, 500));
             //System.out.println(points.get(points.size() -1));
         }
         int queries = 10000; // number of queries for test
@@ -182,8 +183,8 @@ public class KDTreeTest {
         double x, y;
         for (int i = 0; i < queries; i++) {
             // generate random target coordinate
-            x = rInt(-150, 150);
-            y = rInt(-150, 150);
+            x = rDouble(-500, 500);
+            y = rDouble(-500, 500);
             // get closets point
             naiveSet.nearest(x, y);
         }
@@ -212,8 +213,8 @@ public class KDTreeTest {
         startKD = System.currentTimeMillis(); // starting time
         for (int i = 0; i < queries; i++) {
             // generate random target coordinate
-            x = rInt(-150, 150);
-            y = rInt(-150, 150);
+            x = rDouble(-500, 500);
+            y = rDouble(-500, 500);
             // get closets point
             kdTree.nearest(x, y);
         }
@@ -242,8 +243,8 @@ public class KDTreeTest {
      * @param maxY
      * @return a point
      */
-    public Point randomPoint(int minX, int maxY) {
-        return new Point(rInt(minX, maxY), rInt(minX, maxY));
+    public Point randomPoint(double minX, double maxY) {
+        return new Point(rDouble(minX, maxY), rDouble(minX, maxY));
     }
 
     /**
@@ -255,5 +256,16 @@ public class KDTreeTest {
     public int rInt(int min, int max) {
         Random random = new Random();
         return random.nextInt((max - min) + 1) + min;
+    }
+
+    @Test
+    public void testPointMaker() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println(rDouble(-500, 500));
+        }
+    }
+
+    public double rDouble(double min, double max) {
+        return StdRandom.uniform(min, max);
     }
 }

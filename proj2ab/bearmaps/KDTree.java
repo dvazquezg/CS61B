@@ -27,7 +27,31 @@ public class KDTree implements PointSet {
         //Collections.shuffle(temp); // shuffle points to make K-d tree more balanced
         // insert points one-by-one
         for (Point point: temp) {
-            root = add(root, point, Axis.Yaxis);
+            root = add2(root, point, Axis.Xaxis);
+        }
+    }
+
+    private Node add2(Node node, Point newPoint, Axis pAxis) {
+        if (node == null) {
+            return new Node(newPoint, pAxis);
+        }
+        double comparison = comparePoints(newPoint, node.point, pAxis);
+
+        if (comparison < 0) {
+            node.leftChild = add2(node.leftChild, newPoint, flipAx(pAxis));
+
+        } else if (comparison >= 0) {
+            node.rightChild = add2(node.rightChild, newPoint, flipAx(pAxis));
+        }
+
+        return node;
+    }
+
+    private double comparePoints(Point newP, Point current, Axis pAxis) {
+        if (pAxis.equals(Axis.Xaxis)) {
+            return Double.compare(newP.getX(), current.getX());
+        } else {
+            return Double.compare(newP.getY(), current.getY());
         }
     }
 
@@ -40,6 +64,7 @@ public class KDTree implements PointSet {
      */
     private Node add(Node node, Point newPoint, Axis pAxis) {
         if (node == null) {
+            size += 1;
             return new Node(newPoint, pAxis);
         }
         // this.point < point: neg
@@ -51,7 +76,7 @@ public class KDTree implements PointSet {
         } else {
             node.point = newPoint; // overwrite
         }
-        size += 1;
+
         return node;
     }
 
@@ -78,33 +103,33 @@ public class KDTree implements PointSet {
         if (current == null) {
             return closest;
         }
-        //System.out.println(current.getPoint() + "->" + current.distance(target)
-        //        + "||" + closest.getPoint() + "->" + closest.distance(target));
         // check if distance of current node is better than closest so far
         if (current.distance(target) < closest.distance(target)) {
             closest = current;
         }
         // compare current's point and targetPoint
-        int nodePointVStarget = current.comparePoint(target);
-        Node bestChild;
-        Node badChild;
+        //int nodePointVStarget = current.comparePoint(target);
+
+        double compareTarget = comparePoints(target, current.point, current.getAxis());
+        //System.out.println(current.point + " : "  + compareTarget);
+
+        Node bestChild = null;
+        Node badChild = null;
 
         // determine which children of the current node is best suited
-        if (nodePointVStarget < 0) { // current is smaller than target
-            bestChild = current.rightChild; // best could be located in the "right/up" side
-            badChild = current.leftChild;
-        } else if (nodePointVStarget > 0) {
+        if (compareTarget < 0) { // current is smaller than target
             bestChild = current.leftChild; // best could be located in the "left/down" side
             badChild = current.rightChild;
-        } else {
-            return current; // the current point is the same as the target point
+        } else if (compareTarget >= 0) {
+            bestChild = current.rightChild; // best could be located in the "right/up" side
+            badChild = current.leftChild;
         }
 
         // find a better point is the better side
         closest = nearest(bestChild, target, closest);
 
         // check if bad side could have a better point
-        if (badChild != null && closest.isThereCloser(target, closest)) {
+        if (badChild != null && current.isThereCloser(target, closest)) {
             closest = nearest(badChild, target, closest);
         }
 
@@ -185,7 +210,7 @@ public class KDTree implements PointSet {
          */
         public boolean isThereCloser(Point target, Node closest) {
             double shortestDistance;
-            if (this.compareBy.equals(Axis.Yaxis)) {
+            if (this.compareBy.equals(Axis.Xaxis)) {
                 shortestDistance = (target.getX() - this.getX()) * (target.getX() - this.getX());
             } else {
                 shortestDistance = (target.getY() - this.getY()) * (target.getY() - this.getY());
@@ -229,7 +254,7 @@ public class KDTree implements PointSet {
                 return 0; // return zero if the point are the same in BOTH dimensions
             }
             int comparison;
-            if (this.compareBy.equals(Axis.Xaxis)) { // Compares ONE dimension
+            if (this.compareBy.equals(Axis.Yaxis)) { // Compares ONE dimension
                 comparison =  Double.compare(this.getY(), p.getY());
             } else {
                 comparison =  Double.compare(this.getX(), p.getX());
