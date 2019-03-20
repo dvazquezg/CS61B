@@ -41,8 +41,8 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
         if (item == null || contains(item)) {
             throw new IllegalArgumentException("Item is" + (item == null ? "null" : " in Heap"));
         }
-        PriorityNode<T> newNode = new PriorityNode<>(item, priority);
-        heap.add(newNode); // add new node to end of ArrayList
+        //PriorityNode<T> newNode = new PriorityNode<>(item, priority);
+        heap.add(new PriorityNode<>(item, priority)); // add new node to end of ArrayList
         map.put(item, size()); // add item and its index pos into map
         swimUp(size()); // relocate new node (at location size) to its appropriate location
     }
@@ -67,10 +67,10 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      * @param index2 second node
      */
     private void swap(int index1, int index2) {
-        PriorityNode<T> temp = heap.get(index1);
-        heap.set(index1, heap.get(index2));
-        map.put(heap.get(index2).getItem(), index1); // update index of item in map
-        heap.set(index2, temp);
+        PriorityNode<T> temp = heap.get(index1); // store node at index1
+        heap.set(index1, heap.get(index2)); // set item of index2 into index1
+        map.put(heap.get(index2).getItem(), index1); // update new index of item in map
+        heap.set(index2, temp); // set item of temp into index2
         map.put(temp.getItem(), index2); // update index of item in map
     }
 
@@ -162,10 +162,14 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
         if (!contains(item)) {
             throw new NoSuchElementException("No item in heap");
         }
-        int targetNode = map.get(item); // get the index of item in heap
+        int targetNode = map.get(item); // get the index Value of item from map
+        double oldPriority = heap.get(targetNode).getPriority(); // get old priority
         heap.get(targetNode).setPriority(priority); // set new priority
-        swimUp(targetNode);
-        swimDown(targetNode);
+        if (priority < oldPriority) {
+            swimUp(targetNode); // move up if new priority is smaller
+        } else {
+            swimDown(targetNode); // move dow if new priority is larger
+        }
     }
 
     /**
