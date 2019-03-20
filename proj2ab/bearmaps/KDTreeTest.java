@@ -68,7 +68,7 @@ public class KDTreeTest {
         System.out.println("Target point: " + targetPoint);
         System.out.println(closestNaive);
         System.out.println(closestKDtree);
-        kdTree.print();
+        //kdTree.print();
 
         // verify that both points are the same
         assertTrue(closestNaive.equals(closestKDtree));

@@ -24,7 +24,7 @@ public class KDTree implements PointSet {
         for (Point p: points) {
             temp.add(p);
         }
-        //Collections.shuffle(temp); // shuffle points to make K-d tree more balanced
+        Collections.shuffle(temp); // shuffle points to make K-d tree more balanced
         // insert points one-by-one
         for (Point point: temp) {
             root = add(root, point, Axis.Yaxis);
@@ -78,8 +78,8 @@ public class KDTree implements PointSet {
         if (current == null) {
             return closest;
         }
-        System.out.println(current.getPoint() + "->" + current.distance(target)
-                + "||" + closest.getPoint() + "->" + closest.distance(target));
+        //System.out.println(current.getPoint() + "->" + current.distance(target)
+        //        + "||" + closest.getPoint() + "->" + closest.distance(target));
         // check if distance of current node is better than closest so far
         if (current.distance(target) < closest.distance(target)) {
             closest = current;
@@ -116,10 +116,10 @@ public class KDTree implements PointSet {
      */
     private enum Axis { Yaxis, Xaxis }
 
-
+    /*
     public void print(){
         root.print();
-    }
+    }*/
 
     /**
      * Class that represents a Point stored in the KDTree
@@ -193,7 +193,7 @@ public class KDTree implements PointSet {
             return shortestDistance < closest.distance(target);
         }
 
-
+        /*
         public void print() {
             print("", true, "root ", 1);
         }
@@ -203,18 +203,18 @@ public class KDTree implements PointSet {
                         + "(" + getX() + ", " + getY() + ")";
             System.out.println(prefix + (isTail ? "└── " : "├── ") + info);
             if (leftChild != null && rightChild == null) {
-                leftChild.print(prefix + (isTail ?"    " : "│   "), true, "Left  ", level + 1);
+                leftChild.print(prefix + (isTail ? "    " : "│   "), true, "Left  ", level + 1);
             } else if (leftChild != null && rightChild != null) {
                 leftChild.print(prefix + (isTail ? "    " : "│   "), false, "Left  ", level + 1);
             }
 
             if (rightChild != null && leftChild == null) {
-                rightChild.print(prefix + (isTail ?"    " : "│   "), true, "Right ", level + 1);
+                rightChild.print(prefix + (isTail ? "    " : "│   "), true, "Right ", level + 1);
                 //rightChild.print(prefix + (isTail ? "    " : "│   "), false);
             } else if (rightChild != null && leftChild != null) {
                 rightChild.print(prefix + (isTail ? "    " : "│   "), false, "Right ", level + 1);
             }
-        }
+        }*/
 
         /**
          * Compares this Node's point and a given point
