@@ -167,13 +167,15 @@ public class KDTreeTest {
     @Test
     public void timingNaiveKDtree() {
         ArrayList<Point> points = new ArrayList<>();
+        int queries = 10000; // number of queries for test
+        int range = 1000;
         // fill list of random points
         for (int i = 0; i < 1000000; i++) {
-            points.add(randomPoint(-500, 500));
+            points.add(randomPoint(-range, range));
             //System.out.println(points.get(points.size() -1));
         }
-        int queries = 10000; // number of queries for test
         System.out.println("Starting test for " + points.size() + " points.");
+        System.out.println("x and y coordinates range from [-" + range + ", " + range + "]");
 
         /****** Start NaivePointSet Timing test ******/
         System.out.println("------- NaivePointSet Performance Test -------");
@@ -191,8 +193,8 @@ public class KDTreeTest {
         double x, y;
         for (int i = 0; i < queries; i++) {
             // generate random target coordinate
-            x = rDouble(-500, 500);
-            y = rDouble(-500, 500);
+            x = rDouble(-range, range);
+            y = rDouble(-range, range);
             // get closets point
             naiveSet.nearest(x, y);
         }
@@ -221,8 +223,8 @@ public class KDTreeTest {
         startKD = System.currentTimeMillis(); // starting time
         for (int i = 0; i < queries; i++) {
             // generate random target coordinate
-            x = rDouble(-500, 500);
-            y = rDouble(-500, 500);
+            x = rDouble(-range, range);
+            y = rDouble(-range, range);
             // get closets point
             kdTree.nearest(x, y);
         }

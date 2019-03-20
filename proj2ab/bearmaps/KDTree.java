@@ -10,7 +10,6 @@ import java.util.List;
  */
 public class KDTree implements PointSet {
     private Node root;
-    private int size;
 
     /**
      * Creates a Kd tree from a list of nodes
@@ -27,31 +26,7 @@ public class KDTree implements PointSet {
         Collections.shuffle(temp); // shuffle points to make K-d tree more balanced
         // insert points one-by-one
         for (Point point: temp) {
-            root = add2(root, point, Axis.Xaxis);
-        }
-    }
-
-    private Node add2(Node node, Point newPoint, Axis pAxis) {
-        if (node == null) {
-            return new Node(newPoint, pAxis);
-        }
-        double comparison = comparePoints(newPoint, node.point, pAxis);
-
-        if (comparison < 0) {
-            node.leftChild = add2(node.leftChild, newPoint, flipAx(pAxis));
-
-        } else if (comparison >= 0) {
-            node.rightChild = add2(node.rightChild, newPoint, flipAx(pAxis));
-        }
-
-        return node;
-    }
-
-    private double comparePoints(Point newP, Point current, Axis pAxis) {
-        if (pAxis.equals(Axis.Xaxis)) {
-            return Double.compare(newP.getX(), current.getX());
-        } else {
-            return Double.compare(newP.getY(), current.getY());
+            root = add(root, point, Axis.Xaxis);
         }
     }
 
@@ -64,20 +39,33 @@ public class KDTree implements PointSet {
      */
     private Node add(Node node, Point newPoint, Axis pAxis) {
         if (node == null) {
-            size += 1;
             return new Node(newPoint, pAxis);
         }
-        // this.point < point: neg
-        int nodePointVSnewPoint = node.comparePoint(newPoint);
-        if (nodePointVSnewPoint < 0) {
-            node.rightChild = add(node.rightChild, newPoint, flipAx(node.getAxis()));
-        } else if (nodePointVSnewPoint > 0) {
-            node.leftChild = add(node.leftChild, newPoint, flipAx(node.getAxis()));
-        } else {
-            node.point = newPoint; // overwrite
+        double comparison = comparePoints(newPoint, node.point, pAxis);
+
+        if (comparison < 0) {
+            node.leftChild = add(node.leftChild, newPoint, flipAx(pAxis));
+
+        } else if (comparison >= 0) {
+            node.rightChild = add(node.rightChild, newPoint, flipAx(pAxis));
         }
 
         return node;
+    }
+
+    /**
+     * Compares two points based on the axis of parent node
+     * @param newP the point to insert
+     * @param current the parent node
+     * @param pAxis the parent's axis of comparison
+     * @return
+     */
+    private double comparePoints(Point newP, Point current, Axis pAxis) {
+        if (pAxis.equals(Axis.Xaxis)) {
+            return Double.compare(newP.getX(), current.getX());
+        } else {
+            return Double.compare(newP.getY(), current.getY());
+        }
     }
 
     /**
@@ -108,16 +96,12 @@ public class KDTree implements PointSet {
             closest = current;
         }
         // compare current's point and targetPoint
-        //int nodePointVStarget = current.comparePoint(target);
-
         double compareTarget = comparePoints(target, current.point, current.getAxis());
-        //System.out.println(current.point + " : "  + compareTarget);
-
         Node bestChild = null;
         Node badChild = null;
 
         // determine which children of the current node is best suited
-        if (compareTarget < 0) { // current is smaller than target
+        if (compareTarget < 0) { // target is smaller than current
             bestChild = current.leftChild; // best could be located in the "left/down" side
             badChild = current.rightChild;
         } else if (compareTarget >= 0) {
@@ -128,12 +112,31 @@ public class KDTree implements PointSet {
         // find a better point is the better side
         closest = nearest(bestChild, target, closest);
 
-        // check if bad side could have a better point
-        if (badChild != null && current.isThereCloser(target, closest)) {
+        // check if bad side of current node could have something better
+        if (badChild != null && isThereCloser(current, target, closest)) {
             closest = nearest(badChild, target, closest);
         }
 
+        // returns closest point found
         return closest;
+    }
+
+    /**
+     * Determines if given current node's region may contain a closer point
+     * @param current the node to check
+     * @param target the desired point
+     * @param closest current closets node
+     * @return true is it may contain a closer point, false otherwise
+     */
+    public boolean isThereCloser(Node current, Point target, Node closest) {
+        double shortestDistance;
+        if (current.compareBy.equals(Axis.Xaxis)) {
+            shortestDistance = (target.getX() - current.getX()) * (target.getX() - current.getX());
+        } else {
+            shortestDistance = (target.getY() - current.getY()) * (target.getY() - current.getY());
+        }
+        // compares the shortest distance of current node's region to distance to closest
+        return shortestDistance < closest.distance(target);
     }
 
     /**
@@ -202,22 +205,6 @@ public class KDTree implements PointSet {
             return deltaX * deltaX + deltaY * deltaY;
         }
 
-        /**
-         * Determines if this node's region may contain a closer point
-         * @param target the desired point
-         * @param closest current closets node
-         * @return true is it may contain a closer point, false otherwise
-         */
-        public boolean isThereCloser(Point target, Node closest) {
-            double shortestDistance;
-            if (this.compareBy.equals(Axis.Xaxis)) {
-                shortestDistance = (target.getX() - this.getX()) * (target.getX() - this.getX());
-            } else {
-                shortestDistance = (target.getY() - this.getY()) * (target.getY() - this.getY());
-            }
-            return shortestDistance < closest.distance(target);
-        }
-
         /*
         public void print() {
             print("", true, "root ", 1);
@@ -240,28 +227,5 @@ public class KDTree implements PointSet {
                 rightChild.print(prefix + (isTail ? "    " : "│   "), false, "Right ", level + 1);
             }
         }*/
-
-        /**
-         * Compares this Node's point and a given point
-         * If both x and y coordinates of both points are the same, then
-         * points are the same. Otherwise it compares points by this node's
-         * axis of comparison
-         * @param p the point to be compared
-         * @return result of comparison
-         */
-        public int comparePoint(Point p) {
-            if (this.point.equals(p)) {
-                return 0; // return zero if the point are the same in BOTH dimensions
-            }
-            int comparison;
-            if (this.compareBy.equals(Axis.Yaxis)) { // Compares ONE dimension
-                comparison =  Double.compare(this.getY(), p.getY());
-            } else {
-                comparison =  Double.compare(this.getX(), p.getX());
-            }
-            // break ties by adding one if the comparison is zero (same dimension)
-            // if parent and child are the same in given axis, parent(this) is smaller than child
-            return comparison == 0 ? -1 : comparison;
-        }
     }
 }
