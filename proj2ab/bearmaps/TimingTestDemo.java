@@ -2,8 +2,6 @@ package bearmaps;
 
 import edu.princeton.cs.algs4.Stopwatch;
 
-import java.util.Random;
-
 /**
  * Created by hug. Demonstrates how you can use either
  * System.currentTimeMillis or the Princeton Stopwatch
@@ -30,7 +28,8 @@ public class TimingTestDemo {
             heapTest.add(i, 1 + (Math.random() * (100000 - 1)));
             //naiveTest.add(i, 1);
         }
-        System.out.println("Total time elapsed: " + sw.elapsedTime() +  " seconds. for 20,000,000 insertions");
+        System.out.println("Total time elapsed: " + sw.elapsedTime()
+                +  " seconds. for 20,000,000 insertions");
 
     }
 }

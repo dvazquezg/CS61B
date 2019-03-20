@@ -24,7 +24,7 @@ public class KDTree implements PointSet {
         for (Point p: points) {
             temp.add(p);
         }
-        Collections.shuffle(temp); // shuffle points to make K-d tree more balanced
+        //Collections.shuffle(temp); // shuffle points to make K-d tree more balanced
         // insert points one-by-one
         for (Point point: temp) {
             root = add(root, point, Axis.Yaxis);
@@ -78,7 +78,8 @@ public class KDTree implements PointSet {
         if (current == null) {
             return closest;
         }
-
+        System.out.println(current.getPoint() + "->" + current.distance(target)
+                + "||" + closest.getPoint() + "->" + closest.distance(target));
         // check if distance of current node is better than closest so far
         if (current.distance(target) < closest.distance(target)) {
             closest = current;
@@ -87,6 +88,7 @@ public class KDTree implements PointSet {
         int nodePointVStarget = current.comparePoint(target);
         Node bestChild;
         Node badChild;
+
         // determine which children of the current node is best suited
         if (nodePointVStarget < 0) { // current is smaller than target
             bestChild = current.rightChild; // best could be located in the "right/up" side
@@ -102,7 +104,7 @@ public class KDTree implements PointSet {
         closest = nearest(bestChild, target, closest);
 
         // check if bad side could have a better point
-        if (badChild != null && badChild.canBeCloser(target, closest)) {
+        if (badChild != null && closest.isThereCloser(target, closest)) {
             closest = nearest(badChild, target, closest);
         }
 
@@ -114,10 +116,10 @@ public class KDTree implements PointSet {
      */
     private enum Axis { Yaxis, Xaxis }
 
-    /*
+
     public void print(){
         root.print();
-    }*/
+    }
 
     /**
      * Class that represents a Point stored in the KDTree
@@ -181,7 +183,7 @@ public class KDTree implements PointSet {
          * @param closest current closets node
          * @return true is it may contain a closer point, false otherwise
          */
-        public boolean canBeCloser(Point target, Node closest) {
+        public boolean isThereCloser(Point target, Node closest) {
             double shortestDistance;
             if (this.compareBy.equals(Axis.Yaxis)) {
                 shortestDistance = (target.getX() - this.getX()) * (target.getX() - this.getX());
@@ -191,7 +193,7 @@ public class KDTree implements PointSet {
             return shortestDistance < closest.distance(target);
         }
 
-        /*
+
         public void print() {
             print("", true, "root ", 1);
         }
@@ -212,7 +214,7 @@ public class KDTree implements PointSet {
             } else if (rightChild != null && leftChild != null) {
                 rightChild.print(prefix + (isTail ? "    " : "│   "), false, "Right ", level + 1);
             }
-        }*/
+        }
 
         /**
          * Compares this Node's point and a given point

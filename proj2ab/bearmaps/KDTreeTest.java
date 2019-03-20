@@ -43,6 +43,38 @@ public class KDTreeTest {
     }
 
     @Test
+    public void deadlePoints2() {
+        Point p1 = new Point(277.5435652488, -450.5567989151);
+        Point p2 = new Point(4, 2);
+        Point p3 = new Point(187.2792022774, -695.8081816334);
+        Point p4 = new Point(3, 3);
+        Point p5 = new Point(2, 3);
+        Point p6 = new Point(4, 5);
+        List<Point> pointsDemo = List.of(p1, p2, p3, p4, p5, p6);
+
+        // generate pointStructures
+        NaivePointSet naiveSet = new NaivePointSet(pointsDemo);
+        KDTree kdTree = new KDTree(pointsDemo);
+
+        // generate target point
+        double x = 427.535670;
+        double y = -735.656403;
+        Point targetPoint = new Point(x, y);
+
+        // get closets point
+        Point closestNaive = naiveSet.nearest(x, y);
+        Point closestKDtree = kdTree.nearest(x, y);
+
+        System.out.println("Target point: " + targetPoint);
+        System.out.println(closestNaive);
+        System.out.println(closestKDtree);
+        kdTree.print();
+
+        // verify that both points are the same
+        assertTrue(closestNaive.equals(closestKDtree));
+    }
+
+    @Test
     public void deadlyPoints() {
         Point p1 = new Point(2, 3); // constructs a Point with x = 1.1, y = 2.2
         Point p2 = new Point(4, 2);
