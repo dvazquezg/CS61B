@@ -24,7 +24,7 @@ public class KDTree implements PointSet {
         for (Point p: points) {
             temp.add(p);
         }
-        //Collections.shuffle(temp); // shuffle points to make K-d tree more balanced
+        Collections.shuffle(temp); // shuffle points to make K-d tree more balanced
         // insert points one-by-one
         for (Point point: temp) {
             root = add2(root, point, Axis.Xaxis);

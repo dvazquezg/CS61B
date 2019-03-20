@@ -42,7 +42,9 @@ public class KDTreeTest {
 
         // verify that distances are the same
         //assertTrue(closestNaive.equals(closestKDtree));
-        assertEquals(distance(closestNaive, targetPoint), distance(closestKDtree, targetPoint), .00000000001);
+        double disNaiveTarget = distance(closestNaive, targetPoint);
+        double distanceKDTarget = distance(closestKDtree, targetPoint);
+        assertEquals(disNaiveTarget, distanceKDTarget, .00000000001);
 
     }
 
@@ -76,7 +78,9 @@ public class KDTreeTest {
 
         // verify that dsitances are the same
         //assertTrue(closestNaive.equals(closestKDtree));
-        assertEquals(distance(closestNaive, targetPoint), distance(closestKDtree, targetPoint), .00000000001);
+        double disNaiveTarget = distance(closestNaive, targetPoint);
+        double distanceKDTarget = distance(closestKDtree, targetPoint);
+        assertEquals(disNaiveTarget, distanceKDTarget, .00000000001);
     }
 
     @Test
@@ -109,7 +113,9 @@ public class KDTreeTest {
         //kdTree.print();
 
         // verify that distances are the same
-        assertEquals(distance(closestNaive, targetPoint), distance(closestKDtree, targetPoint), .00000000001);
+        double disNaiveTarget = distance(closestNaive, targetPoint);
+        double distanceKDTarget = distance(closestKDtree, targetPoint);
+        assertEquals(disNaiveTarget, distanceKDTarget, .00000000001);
     }
 
     public double distance(Point p1, Point p2) {
@@ -152,7 +158,9 @@ public class KDTreeTest {
                 + closestNaive.equals(closestKDtree));
 
         // verify that distances are the same
-        assertEquals(distance(closestNaive, targetPoint), distance(closestKDtree, targetPoint), .00000000001);
+        double disNaiveTarget = distance(closestNaive, targetPoint);
+        double distanceKDTarget = distance(closestKDtree, targetPoint);
+        assertEquals(disNaiveTarget, distanceKDTarget, .00000000001);
         //assertTrue(closestNaive.equals(closestKDtree));
     }
 
@@ -257,13 +265,12 @@ public class KDTreeTest {
         Random random = new Random();
         return random.nextInt((max - min) + 1) + min;
     }
-
-    @Test
+    /*
     public void testPointMaker() {
         for (int i = 0; i < 100; i++) {
-            System.out.println(rDouble(-500, 500));
+            //System.out.println(rDouble(-500, 500));
         }
-    }
+    }*/
 
     public double rDouble(double min, double max) {
         return StdRandom.uniform(min, max);
