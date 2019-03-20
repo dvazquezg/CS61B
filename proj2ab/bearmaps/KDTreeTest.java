@@ -1,6 +1,8 @@
 package bearmaps;
 
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -37,8 +39,9 @@ public class KDTreeTest {
         //System.out.println(closestKDtree);
         //kdTree.print();
 
-        // verify that both points are the same
-        assertTrue(closestNaive.equals(closestKDtree));
+        // verify that distances are the same
+        //assertTrue(closestNaive.equals(closestKDtree));
+        assertEquals(distance(closestNaive, targetPoint), distance(closestKDtree, targetPoint), .00000000001);
 
     }
 
@@ -70,8 +73,9 @@ public class KDTreeTest {
         System.out.println(closestKDtree);
         //kdTree.print();
 
-        // verify that both points are the same
-        assertTrue(closestNaive.equals(closestKDtree));
+        // verify that dsitances are the same
+        //assertTrue(closestNaive.equals(closestKDtree));
+        assertEquals(distance(closestNaive, targetPoint), distance(closestKDtree, targetPoint), .00000000001);
     }
 
     @Test
@@ -103,8 +107,14 @@ public class KDTreeTest {
         System.out.println(closestKDtree);
         //kdTree.print();
 
-        // verify that both points are the same
-        assertTrue(closestNaive.equals(closestKDtree));
+        // verify that distances are the same
+        assertEquals(distance(closestNaive, targetPoint), distance(closestKDtree, targetPoint), .00000000001);
+    }
+
+    public double distance(Point p1, Point p2) {
+        double deltaX = p1.getX() - p2.getX();
+        double deltaY = p1.getY() - p2.getY();
+        return deltaX * deltaX + deltaY * deltaY;
     }
 
     @Test
@@ -140,8 +150,9 @@ public class KDTreeTest {
         System.out.println("Were the outputs the same point? "
                 + closestNaive.equals(closestKDtree));
 
-        // verify that both points are the same
-        assertTrue(closestNaive.equals(closestKDtree));
+        // verify that distances are the same
+        assertEquals(distance(closestNaive, targetPoint), distance(closestKDtree, targetPoint), .00000000001);
+        //assertTrue(closestNaive.equals(closestKDtree));
     }
 
     @Test
