@@ -49,7 +49,7 @@ public class KDTreeTest {
     }
 
     @Test
-    public void deadlePoints2() {
+    public void deadlyPoints2() {
         Point p1 = new Point(277.5435652488, -450.5567989151);
         Point p2 = new Point(4, 2);
         Point p3 = new Point(187.2792022774, -695.8081816334);
@@ -143,8 +143,8 @@ public class KDTreeTest {
         //dTree.print();
 
         // generate random target coordinate
-        double x = rInt(-100, 100);
-        double y = rInt(-100, 100);
+        double x = rDouble(-100, 100);
+        double y = rDouble(-100, 100);
         Point targetPoint = new Point(x, y);
 
         // get closets point
@@ -169,8 +169,9 @@ public class KDTreeTest {
         ArrayList<Point> points = new ArrayList<>();
         int queries = 10000; // number of queries for test
         int range = 1000;
+        int pointNumber = 100000;
         // fill list of random points
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < pointNumber; i++) {
             points.add(randomPoint(-range, range));
             //System.out.println(points.get(points.size() -1));
         }
