@@ -7,7 +7,7 @@ import edu.princeton.cs.algs4.Stopwatch;
  * System.currentTimeMillis or the Princeton Stopwatch
  * class to time code.
  */
-public class TimingTestDemo {
+public class TimingTestHeap {
     public static void main(String[] args) {
         /*
         long start = System.currentTimeMillis();
