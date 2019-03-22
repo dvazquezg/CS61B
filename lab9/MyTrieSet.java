@@ -52,7 +52,6 @@ public class MyTrieSet implements TrieSet61B {
      * Inserts string KEY into Trie
      * @param key the key to be inserted
      */
-
     @Override
     public void add(String key) {
         if (key == null || key.length() < 1) {
@@ -146,7 +145,7 @@ public class MyTrieSet implements TrieSet61B {
         private HashMap<Character, Node> map;
         private boolean isKey;
         /**
-         * Default contructor (used for root instantiation)
+         * Default constructor (used for root instantiation)
          */
         Node() {
             map = new HashMap<>();
