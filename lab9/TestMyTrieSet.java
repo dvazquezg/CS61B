@@ -53,11 +53,4 @@ public class TestMyTrieSet {
             assertFalse(keys.contains(s));
         }
     }
-
-    public static void main(String[] args) {
-        jh61b.junit.TestRunner.runTests(TestMyTrieSet.class);
-    }
-
-
-
 }
