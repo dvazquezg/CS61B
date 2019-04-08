@@ -1,7 +1,7 @@
 package bearmaps.hw4;
 
-//import bearmaps.proj2ab.ArrayHeapMinPQ;
-import bearmaps.proj2ab.DoubleMapPQ;
+import bearmaps.proj2ab.ArrayHeapMinPQ;
+//import bearmaps.proj2ab.DoubleMapPQ;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +17,8 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
     // A* Algorithm analysis instance variables
     private HashMap<Vertex, Double> distTo; // best known total distance from source to vertex
     private HashMap<Vertex, Vertex> edgeTo; // maps each vertex to best known predecessor
-    private DoubleMapPQ<Vertex> fringe;
-    //ArrayHeapMinPQ<Vertex> fringe;
+    //private DoubleMapPQ<Vertex> fringe;
+    ArrayHeapMinPQ<Vertex> fringe;
 
     // outcome intance varibles
     private SolverOutcome outcome; // The final status of the A* algorithm
@@ -38,8 +38,8 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
      */
     public AStarSolver(AStarGraph<Vertex> input, Vertex start, Vertex end, double timeout) {
         // initialize instance variables
-        fringe = new DoubleMapPQ<>(); // priority queue
-        //fringe = new ArrayHeapMinPQ<>();
+        //fringe = new DoubleMapPQ<>(); // priority queue
+        fringe = new ArrayHeapMinPQ<>();
         distTo = new HashMap<>();
         edgeTo = new HashMap<>();
         solution = new ArrayList<>();
@@ -61,6 +61,9 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
         Vertex current = null;
         // main loop
         while (fringe.size() != 0 || (timeSpent = sw.elapsedTime()) < timeout) {
+            if (fringe.size() == 0) {
+                break;
+            }
             current = fringe.removeSmallest();
             numStatesExplored++; // count dequeue operations
             if (current.equals(goal)) {
