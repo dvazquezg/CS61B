@@ -44,6 +44,7 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
         edgeTo = new HashMap<>();
         solution = new ArrayList<>();
         numStatesExplored = 0;
+        solutionWeight = 0;
         timeSpent = 0;
 
         // add source node to fringe and maps
@@ -124,6 +125,7 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
             double newDistance = distTo.get(p) + w;
             if (newDistance < distTo.get(q)) {
                 distTo.put(q, newDistance);
+                edgeTo.put(q, p);
                 // check if vertex q is in fringe PQ
                 if (fringe.contains(q)) {
                     // change priority using distance to q and the heuristic estimate
