@@ -1,7 +1,7 @@
 package bearmaps.hw4;
 
 import bearmaps.proj2ab.ArrayHeapMinPQ;
-import bearmaps.proj2ab.DoubleMapPQ;
+//import bearmaps.proj2ab.DoubleMapPQ;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,14 +15,14 @@ import edu.princeton.cs.algs4.Stopwatch;
  */
 public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
     // A* Algorithm analysis instance variables
-    private HashMap<Vertex, Double> distTo; // maps each vertex to best known total distance from source
+    private HashMap<Vertex, Double> distTo; // best known total distance from source to vertex
     private HashMap<Vertex, Vertex> edgeTo; // maps each vertex to best known predecessor
-    private DoubleMapPQ<Vertex> fringe;
-    //ArrayHeapMinPQ<Integer> fringe;
+    //private DoubleMapPQ<Vertex> fringe;
+    ArrayHeapMinPQ<Vertex> fringe;
 
     // outcome intance varibles
     private SolverOutcome outcome; // The final status of the A* algorithm
-    private double solutionWeight; // The total weight of the given solution, taking into account edge weights
+    private double solutionWeight; // The total weight of the given solution
     private List<Vertex> solution; // A list of vertices corresponding to a solution
     private int numStatesExplored; // The total number of priority queue dequeue operations
     private double timeSpent; // The total time spent in seconds by the constructor
@@ -38,7 +38,8 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
      */
     public AStarSolver(AStarGraph<Vertex> input, Vertex start, Vertex end, double timeout) {
         // initialize instance variables
-        fringe = new DoubleMapPQ<>(); // priority queue
+        //fringe = new DoubleMapPQ<>(); // priority queue
+        fringe = new ArrayHeapMinPQ<>();
         distTo = new HashMap<>();
         edgeTo = new HashMap<>();
         solution = new ArrayList<>();
@@ -57,9 +58,7 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
     private void solver(AStarGraph<Vertex> input, Vertex source, Vertex goal, double timeout) {
         Stopwatch sw = new Stopwatch(); // start timer
         Vertex current = null;
-
-        /*while(fringe.size() != 0 || !(current = fringe.removeSmallest()).equals(end)
-            || (timeSpent = sw.elapsedTime()) < timeout) {*/
+        // main loop
         while (fringe.size() != 0 || (timeSpent = sw.elapsedTime()) < timeout) {
             current = fringe.removeSmallest();
             numStatesExplored++; // count dequeue operations
@@ -105,7 +104,10 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
     /**
      * Relaxes a given edge
      * Relaxation refers to the action of updating the distance from source
-     * to vertex q if distTo[p] + w < distTo[q]:
+     * to vertex q if distTo[p] + w < distTo[q]. It also performs fringe PQ
+     * enqueuing operations and employs the heuristic function to set
+     * the priority of a Vertex in the fringe. The priority is give by:
+     * distTo[q] + h(q, goal) where h is the heuristic estimate
      * @param e
      */
     private void edgeRelaxer(WeightedEdge<Vertex> e, AStarGraph<Vertex> input, Vertex goal) {
@@ -124,7 +126,9 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
                 distTo.put(q, newDistance);
                 // check if vertex q is in fringe PQ
                 if (fringe.contains(q)) {
-                    fringe.changePriority(q, distTo.get(q) + input.estimatedDistanceToGoal(q, goal));
+                    // change priority using distance to q and the heuristic estimate
+                    fringe.changePriority(q, distTo.get(q)
+                            + input.estimatedDistanceToGoal(q, goal));
                 }
             }
 
