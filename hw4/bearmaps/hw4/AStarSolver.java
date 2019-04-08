@@ -18,7 +18,7 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
     private HashMap<Vertex, Double> distTo; // best known total distance from source to vertex
     private HashMap<Vertex, Vertex> edgeTo; // maps each vertex to best known predecessor
     //private DoubleMapPQ<Vertex> fringe;
-    ArrayHeapMinPQ<Vertex> fringe;
+    private ArrayHeapMinPQ<Vertex> fringe;
 
     // outcome intance varibles
     private SolverOutcome outcome; // The final status of the A* algorithm
@@ -60,10 +60,7 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
         Stopwatch sw = new Stopwatch(); // start timer
         Vertex current = null;
         // main loop
-        while (fringe.size() != 0 || (timeSpent = sw.elapsedTime()) < timeout) {
-            if (fringe.size() == 0) {
-                break;
-            }
+        while (fringe.size() != 0 && (timeSpent = sw.elapsedTime()) < timeout) {
             current = fringe.removeSmallest();
             numStatesExplored++; // count dequeue operations
             if (current.equals(goal)) {
