@@ -1,5 +1,7 @@
 import edu.princeton.cs.algs4.Queue;
 
+//import java.awt.desktop.QuitEvent;
+
 public class MergeSort {
     /**
      * Removes and returns the smallest item that is in q1 or q2.
@@ -42,8 +44,14 @@ public class MergeSort {
      */
     private static <Item extends Comparable> Queue<Queue<Item>>
             makeSingleItemQueues(Queue<Item> items) {
-        // Your code here!
-        return null;
+        Queue<Queue<Item>> singleItemsQueue = new Queue<>();
+        for (Item item : items) {
+            Queue<Item> singleItem = new Queue<>();
+            singleItem.enqueue(item);
+            //System.out.print(item + " -> ");
+            singleItemsQueue.enqueue(singleItem);
+        }
+        return singleItemsQueue;
     }
 
     /**
@@ -61,8 +69,18 @@ public class MergeSort {
      */
     private static <Item extends Comparable> Queue<Item> mergeSortedQueues(
             Queue<Item> q1, Queue<Item> q2) {
-        // Your code here!
-        return null;
+        Queue<Item> sortedQueue = new Queue<>();
+        // check base cases
+        if (q1 == null) {
+            return q2;
+        } else if (q2 == null) {
+            return q1;
+        }
+        // get first items to start comparisons
+        while (!q1.isEmpty() || !q2.isEmpty()) {
+            sortedQueue.enqueue(getMin(q1, q2));
+        }
+        return sortedQueue;
     }
 
     /**
@@ -77,7 +95,20 @@ public class MergeSort {
      */
     public static <Item extends Comparable> Queue<Item> mergeSort(
             Queue<Item> items) {
-        // Your code here!
-        return items;
+        Queue<Queue<Item>> itemsQueues = makeSingleItemQueues(items);
+        int currItems = itemsQueues.size();
+        while (itemsQueues.size() > 1) {
+            if (currItems > 1) { // two or more elements
+                itemsQueues.enqueue(mergeSortedQueues(itemsQueues.dequeue(),
+                        itemsQueues.dequeue()));
+                currItems -= 2;
+            } else {
+                if (currItems == 1) {
+                    itemsQueues.enqueue(itemsQueues.dequeue());
+                }
+                currItems = itemsQueues.size();
+            }
+        }
+        return itemsQueues.dequeue();
     }
 }
