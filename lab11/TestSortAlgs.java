@@ -59,6 +59,12 @@ public class TestSortAlgs {
         System.out.println("Unsorted: " + numbers);
         sorted = MergeSort.mergeSort(numbers);
         System.out.println("Sorted: " + sorted);
+
+        //---------- Empty list -----------
+        numbers = new Queue<>();
+        sorted = MergeSort.mergeSort(numbers);
+        assertTrue(numbers.isEmpty());
+        assertTrue(isSorted(sorted));
     }
 
     /**

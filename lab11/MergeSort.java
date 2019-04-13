@@ -95,23 +95,10 @@ public class MergeSort {
      */
     public static <Item extends Comparable> Queue<Item> mergeSort(
             Queue<Item> items) {
-        if (items.isEmpty()) {
-            return items;
-        }
         Queue<Queue<Item>> itemsQueues = makeSingleItemQueues(items);
-        int currItems = itemsQueues.size();
         while (itemsQueues.size() > 1) {
-            if (currItems > 1) { // two or more elements
-                itemsQueues.enqueue(mergeSortedQueues(itemsQueues.dequeue(),
-                        itemsQueues.dequeue()));
-                currItems -= 2;
-            } else {
-                if (currItems == 1) {
-                    itemsQueues.enqueue(itemsQueues.dequeue());
-                }
-                currItems = itemsQueues.size();
-            }
+            itemsQueues.enqueue(mergeSortedQueues(itemsQueues.dequeue(), itemsQueues.dequeue()));
         }
-        return itemsQueues.dequeue();
+        return items.isEmpty() ? items : itemsQueues.dequeue();
     }
 }
