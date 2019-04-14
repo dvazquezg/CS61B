@@ -84,12 +84,77 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        //System.out.println("yo, wanna know the parameters given by the web browser? They are:");
-        //System.out.println(requestParams);
+        System.out.println("yo, wanna know the parameters given by the web browser? They are:");
+        System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
         System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
                 + "your browser.");
+        // get individual parameters
+        double ullon = requestParams.get("ullon");
+        double ullat = requestParams.get("ullat");
+        double lrlon = requestParams.get("lrlon");
+        double lrlat = requestParams.get("lrlat");
+        double w_res = requestParams.get("w");
+        double h_res = requestParams.get("h");
+
+        for (Map.Entry<String, Double> a : requestParams.entrySet()) {
+            System.out.println(a.getKey() + ": " + a.getValue());
+        }
+
+        System.out.println("Required depth: " + getDepth(ullon, lrlon, w_res));
+
+
+
         return results;
+    }
+
+    /**
+     * Returns an array containing the corner bounds of the raster area
+     * @return
+     */
+    private double[] getRasterBounds(double ullon, double lrlon, double ullat, double lrlat, double depth) {
+
+        return null;
+    }
+
+    
+
+    /**
+     * Calculates the longitudinal distance per pixel (LonDPP)
+     * LonDPP = (lower right longitude − upper left longitude) / width of the image (or box) in pixels
+     * @param ullon upper left longitude
+     * @param lrlon lower right longitude
+     * @param w_res screen width resolution
+     * @return LonDPP
+     */
+    private double getLonDPP(double ullon, double lrlon, double w_res) {
+        return (lrlon - ullon) / w_res;
+    }
+
+    /**
+     * Calculates the appropriate resolution depth level
+     * @param ullon upper left longitude
+     * @param lrlon lower right longitude
+     * @param w_res screen width resolution
+     * @return
+     */
+    private int getDepth(double ullon, double lrlon, double w_res) {
+        double targetLonDPP = getLonDPP(ullon, lrlon, w_res);
+        double maxLonDPP = getLonDPP(Constants.ROOT_ULLON, Constants.ROOT_LRLON, Constants.TILE_SIZE);
+        double currentLonDPP = maxLonDPP;
+        int maxDepth = 7;
+        int targetDepth = 0;
+
+        while (currentLonDPP > targetLonDPP && targetDepth < maxDepth){
+            //root_lrlon = (root_ullon + root_lrlon) / 2; // midpoint
+            //currentLonDPP = getLonDPP(root_ullon, root_lrlon, Constants.TILE_SIZE);
+            targetDepth += 1;
+            currentLonDPP = maxLonDPP / (Math.pow(2, targetDepth));
+
+            //System.out.println("target: " + targetLonDPP + " current: " + stupid + "level: " + targetDepth);
+        }
+
+        return targetDepth;
     }
 
     @Override
