@@ -84,11 +84,9 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        System.out.println("yo, wanna know the parameters given by the web browser? They are:");
-        System.out.println(requestParams);
+        //System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
-                + "your browser.");
+
         // get individual parameters
         double ullon = requestParams.get("ullon");
         double ullat = requestParams.get("ullat");
@@ -97,32 +95,62 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         double w_res = requestParams.get("w");
         double h_res = requestParams.get("h");
 
+        System.out.println("------------ INPUT ------------ ");
         for (Map.Entry<String, Double> a : requestParams.entrySet()) {
             System.out.println(a.getKey() + ": " + a.getValue());
         }
+        System.out.println("------------ END INPUT ------------ ");
 
-        int depth = getDepth(ullon, lrlon, w_res);
-        System.out.println("Required depth: " + depth);
-        //double ullon, double lrlon, double ullat, double lrlat, double depth
-        double[] raster_bounds = getRasterBounds(ullon, lrlon, ullat, lrlat, depth);
-        String[][] images = get_images(ullon, lrlon, ullat, lrlat, w_res, h_res, depth);
+        // required data
+        int depth = getDepth(ullon, lrlon, w_res); // depth level
+        int ulRow = getRow(ullat, depth); // y_cord first tile
+        int ulCol = getCol(ullon, depth); // x_cord first tile
+        int lrRow = getRow(lrlat, depth); // y_cord last tile
+        int lrCol = getCol(lrlon, depth); // x_cord last tile <-- error idk why :(
+        double raster_ullon = ullon(ulCol, depth); // lon first tile (upper left corner)
+        double raster_ullat = ullat(ulRow, depth); // lat first tile (upper left corner)
+        double raster_lrlon = lrlon(lrCol, depth); // lon last tile (lower right corner)
+        double raster_lrlat = lrlat(lrRow, depth); // lat last tile (lower right corner)
+        String[][] images = get_images(ulRow, ulCol,  lrRow, lrCol, depth);
 
+
+        System.out.println("Depth: " + depth);
+
+
+        // filling response Map
         results.put("render_grid", images);
-        results.put("raster_ul_lon", raster_bounds[0]);
-        results.put("raster_ul_lat", raster_bounds[1]);
-        results.put("raster_lr_lon", raster_bounds[2]);
-        results.put("raster_lr_lat", raster_bounds[3]);
+        results.put("raster_ul_lon", raster_ullon);
+        results.put("raster_ul_lat", raster_ullat);
+        results.put("raster_lr_lon", raster_lrlon);
+        results.put("raster_lr_lat", raster_lrlat);
         results.put("depth", depth);
         results.put("query_success", true);
 
+        System.out.println("------------ OUTPUT ------------ ");
+        for (Map.Entry<String, Object> a : results.entrySet()) {
+            System.out.println(a.getKey() + ": " + a.getValue());
+        }
+        System.out.println("------------ END OUTPUT ------------ ");
+
         return results;
     }
+
+    /* Twelve Images output
+    raster_ul_lon=-122.2998046875
+    >>            -122.2998046875
+    raster_lr_lon=-122.2119140625
+    >>            -122.18994140625 << error since extra column
+    raster_lr_lat=37.82280243352756
+    >>            37.82280243352757
+    raster_ul_lat=37.87484726881516
+    >>            37.87484726881516
+     */
 
     public int getCol(double lon, int depth){
         double w_delta = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
 
         int col = 0;
-        System.out.println("lon " + lon);
+        //System.out.println("lon " + lon);
         while(lrlon(col, depth) < lon) {
             col++;
             //System.out.println(lrlon(col, depth) + " -> col: " + col);
@@ -190,95 +218,21 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
     }
 
 
-
-    private String[][] get_images(double ullon, double lrlon, double ullat, double lrlat, double w, double h, int depth) {
-        double max_width = (Constants.ROOT_LRLON - Constants.ROOT_ULLON); // max
-        double root_ullon_to_ullon = Math.abs(ullon - Constants.ROOT_ULLON);
-        double root_ullon_to_lrlon = Math.abs(lrlon - Constants.ROOT_ULLON);
-        int left_col = (int) (root_ullon_to_ullon * (Math.pow(2, depth)) / max_width); // floor div
-        int right_col = (int) (root_ullon_to_lrlon * (Math.pow(2, depth)) / max_width); // floor div
-        //int right_col = left_col + ((int) (w / Constants.TILE_SIZE)) - 1;
-        System.out.println("left_col: " + left_col + " | right_col: "+ right_col);
-        System.out.println("Right col: " + find_RightCol(left_col, ullon, lrlon, depth));
-
-        double max_heigth = (Constants.ROOT_ULLAT - Constants.ROOT_LRLAT); // max
-        double root_ullat_to_ullat = (Constants.ROOT_ULLAT - ullat);
-        double root_lrlat_to_ullat = (Constants.ROOT_ULLAT - lrlat);
-        int top_row = (int) (root_ullat_to_ullat * (Math.pow(2, depth)) / max_heigth);
-        int bottom_row = (int) (root_lrlat_to_ullat * (Math.pow(2, depth)) / max_heigth);
-        //int bottom_row = top_row + ((int) (h / Constants.TILE_SIZE));
-
-        System.out.println("top_row: " + top_row + " | bottom_row: "+ bottom_row);
-
-        int rows = (bottom_row - top_row) + 1;
-        int cols = (right_col - left_col) + 1;
+    private String[][] get_images(int ulRow, int ulCol, int lrRow , int lrCol, int depth) {
+        int rows = (lrRow - ulRow) + 1;
+        int cols = (lrCol - ulCol) + 1;
 
         String[][] images = new String[rows][cols];
-        System.out.println("" + (rows) + "x" + (cols));
+        System.out.println("Matrix: " + (rows) + "x" + (cols));
         for(int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                images[row][col] = "d" + depth + "_x" + (left_col + col) + "_y" + (top_row + row) + ".png";
+                images[row][col] = "d" + depth + "_x" + (ulCol+ col) + "_y" + (ulRow + row) + ".png";
                 System.out.print(images[row][col] + " ");
             }
             System.out.println();
         }
-
         return images;
     }
-
-    private int find_RightCol(int left_col, double ullon, double lrlon, int depth){
-        double blockWidth = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
-        double root_ullon_to_ullon = Math.abs(ullon - Constants.ROOT_ULLON);
-        double dist_left_right = Math.abs(lrlon - ullon);
-        double currlon = blockWidth; // right edge of end of col
-
-        int right_col = left_col;
-        while(currlon < dist_left_right) {
-            right_col++;
-            currlon +=blockWidth;
-        }
-        return right_col;
-    }
-
-    /**
-     * Returns an array containing the corner bounds of the raster area
-     * @return
-     */
-    private double[] getRasterBounds(double ullon, double lrlon, double ullat, double lrlat, double depth) {
-        double blockWidth = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
-        double blockHeight = (Constants.ROOT_ULLAT - Constants.ROOT_LRLAT) / Math.pow(2, depth);
-        System.out.println("blockwidth: " + blockWidth);
-        System.out.println("blockHeight: " + blockHeight);
-        double alpha_ullon = Math.floor(ullon / blockWidth); // blockWidth factor for ullon
-        double alpha_lrlon = Math.ceil(lrlon / blockWidth); // blockWidth factor for lrlon
-        double beta_ullat = Math.ceil(ullat / blockHeight); // blockHeight factor for ullat
-        double beta_lrlat = Math.floor(lrlat / blockHeight); // blockHeight factor for lrlat
-
-        double raster_ul_lon = alpha_ullon * blockWidth;
-        double raster_lr_lon = alpha_lrlon * blockWidth;
-        double raster_ul_lat = beta_ullat * blockHeight;
-        double raster_lr_lat = beta_lrlat * blockHeight;
-
-        System.out.println("alpha_ullon: " + alpha_ullon);
-        System.out.println("raster_ul_lon: " + raster_ul_lon);
-        System.out.println("raster_ul_lat: " + raster_ul_lat);
-        System.out.println("raster_lr_lon: " + raster_lr_lon);
-        System.out.println("raster_lr_lat: " + raster_lr_lat);
-        /*
-        -122.24212646484375;
-        0.0005421337
-        5.421337009124394E-4
-        0.000542133701
-
-        -122.24006652832031;
-
-        37.87701580361881;
-
-        37.87538940251607;*/
-
-        return new double[]{raster_ul_lon, raster_ul_lat, raster_lr_lon, raster_lr_lat};
-    }
-
 
 
     /**
@@ -313,7 +267,7 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
             targetDepth += 1;
             currentLonDPP = maxLonDPP / (Math.pow(2, targetDepth));
 
-            System.out.println("target: " + targetLonDPP + " current: " + currentLonDPP + "level: " + targetDepth);
+            //System.out.println("target: " + targetLonDPP + " current: " + currentLonDPP + "level: " + targetDepth);
         }
 
 
