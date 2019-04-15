@@ -159,4 +159,60 @@ public class TestRasterAPIHandler {
         return sj.toString();
     }
 
+    @Test
+    public void TestHTMLTest(){
+        RasterAPIHandler d = new RasterAPIHandler();
+        //d7_x84_y28 <- first tile
+        //d7_x86_y30 <- last tile
+        int col = 86;
+        int row = 30;
+        int depth = 7;
+        double ullon=-122.24163047377972;
+        double lrlon=-122.24053369025242;
+        double ullat=37.87655856892288;
+        double lrlat=37.87548268822065;
+        double w=892.0;
+        double h=875.0;
+        System.out.println("tile_ullon: " + d.ullon(col , depth));
+        System.out.println("tile_ullat: " + d.ullat(row, depth));
+        System.out.println("tile_lrlon: " + d.lrlon(col, depth));
+        System.out.println("tile_lrlat: " + d.lrlat(row, depth));
+        System.out.println("ulCol: " + d.getCol(ullon, depth));
+        System.out.println("ulRow: " + d.getRow(ullat, depth));
+        System.out.println("lrCol: " + d.getCol(lrlon, depth));
+        System.out.println("lrRow: " + d.getRow(lrlat, depth));
+    }
+
+    @Test
+    public void TwelveImagesTest(){
+        RasterAPIHandler d = new RasterAPIHandler();
+        //d2_x0_y1 <- first tile
+        //d2_x3_y3 <- last tile
+        int col = 3;
+        int row = 3;
+        int depth = 2;
+        //raster_ul_lon=-122.2998046875, depth=2, raster_lr_lon=-122.2119140625, raster_lr_lat=37.82280243352756,
+        // raster_ul_lat=37.87484726881516
+        // tile_ullat =  37.87484726881516
+
+        //raster_lr_lat=37.82280243352756
+        // tile_lrlat = 37.82280243352756
+
+        double lrlon=-122.2104604264636;
+        double ullon=-122.30410170759153;
+        double ullat=37.870213571328854;
+        double lrlat=37.8318576119893;
+        double w=1091.0;
+        double h=566.0;
+
+        System.out.println("tile_ullon: " + d.ullon(col , depth));
+        System.out.println("tile_ullat: " + d.ullat(row, depth));
+        System.out.println("tile_lrlon: " + d.lrlon(col, depth));
+        System.out.println("tile_lrlat: " + d.lrlat(row, depth));
+        System.out.println("ulCol: " + d.getCol(ullon, depth));
+        System.out.println("lrCol: " + d.getCol(lrlon, depth));
+        System.out.println("ulRow: " + d.getRow(ullat, depth));
+        System.out.println("lrRow: " + d.getRow(lrlat, depth));
+    }
+
 }
