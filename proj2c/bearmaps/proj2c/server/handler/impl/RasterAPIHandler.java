@@ -108,7 +108,6 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         if (lrlon < ullon || lrlat > ullat) {
             return queryFail();
         }
-        // make sure query box contains or partially contains available map
 
 
         int depth = getDepth(ullon, lrlon, wres); // depth level
@@ -148,7 +147,7 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
             return (int) Math.pow(2, depth) - 1;
         }
         // if lon is smaller than ROOT_ULLON, then return smallest possible column value
-        if (lon < Constants.ROOT_ULLON) {
+        if(lon < Constants.ROOT_ULLON) {
             return 0;
         }
 
@@ -288,6 +287,14 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
 
     private Map<String, Object> queryFail() {
         Map<String, Object> results = new HashMap<>();
+
+        results.put("render_grid", null);
+        results.put("raster_ul_lon", 0);
+        results.put("raster_ul_lat", 0);
+        results.put("raster_lr_lon", 0);
+        results.put("raster_lr_lat", 0);
+        results.put("depth", 0);
+        results.put("query_success", false);
 
         /*
         results.put("render_grid",  new String[][]{{"d0_x0_y0.png"}});
