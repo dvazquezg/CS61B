@@ -159,6 +159,7 @@ public class TestRasterAPIHandler {
         return sj.toString();
     }
 
+    /*
     @Test
     public void TestHTMLTest(){
         RasterAPIHandler d = new RasterAPIHandler();
@@ -214,5 +215,6 @@ public class TestRasterAPIHandler {
         System.out.println("ulRow: " + d.getRow(ullat, depth));
         System.out.println("lrRow: " + d.getRow(lrlat, depth));
     }
+    */
 
 }

@@ -7,6 +7,7 @@ import spark.Response;
 import bearmaps.proj2c.utils.Constants;
 
 import javax.imageio.ImageIO;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -23,7 +24,7 @@ import static bearmaps.proj2c.utils.Constants.ROUTE_LIST;
 /**
  * Handles requests from the web browser for map images. These images
  * will be rastered into one large image to be displayed to the user.
- * @author rahul, Josh Hug, _________
+ * @author rahul, Josh Hug, Daniel Vazquez
  */
 public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<String, Object>> {
 
@@ -84,152 +85,138 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        //System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
-
+        //System.out.println(requestParams);
         // get individual parameters
         double ullon = requestParams.get("ullon");
         double ullat = requestParams.get("ullat");
         double lrlon = requestParams.get("lrlon");
         double lrlat = requestParams.get("lrlat");
-        double w_res = requestParams.get("w");
-        double h_res = requestParams.get("h");
-
+        double wres = requestParams.get("w");
+        double hres = requestParams.get("h");
+        /*
         System.out.println("------------ INPUT ------------ ");
         for (Map.Entry<String, Double> a : requestParams.entrySet()) {
             System.out.println(a.getKey() + ": " + a.getValue());
         }
         System.out.println("------------ END INPUT ------------ ");
+        */
 
-        // required data
-        int depth = getDepth(ullon, lrlon, w_res); // depth level
+        //getting required data
+        int depth = getDepth(ullon, lrlon, wres); // depth level
         int ulRow = getRow(ullat, depth); // y_cord first tile
         int ulCol = getCol(ullon, depth); // x_cord first tile
         int lrRow = getRow(lrlat, depth); // y_cord last tile
-        int lrCol = getCol(lrlon, depth); // x_cord last tile <-- error idk why :(
-        double raster_ullon = ullon(ulCol, depth); // lon first tile (upper left corner)
-        double raster_ullat = ullat(ulRow, depth); // lat first tile (upper left corner)
-        double raster_lrlon = lrlon(lrCol, depth); // lon last tile (lower right corner)
-        double raster_lrlat = lrlat(lrRow, depth); // lat last tile (lower right corner)
-        String[][] images = get_images(ulRow, ulCol,  lrRow, lrCol, depth);
-
-
-        System.out.println("Depth: " + depth);
-
+        int lrCol = getCol(lrlon, depth); // x_cord last tile
+        double rasterUllon = ullon(ulCol, depth); // lon first tile (upper left corner)
+        double rasterUllat = ullat(ulRow, depth); // lat first tile (upper left corner)
+        double rasterLrlon = lrlon(lrCol, depth); // lon last tile (lower right corner)
+        double rasterLrlat = lrlat(lrRow, depth); // lat last tile (lower right corner)
+        String[][] images = getImages(ulRow, ulCol,  lrRow, lrCol, depth);
 
         // filling response Map
         results.put("render_grid", images);
-        results.put("raster_ul_lon", raster_ullon);
-        results.put("raster_ul_lat", raster_ullat);
-        results.put("raster_lr_lon", raster_lrlon);
-        results.put("raster_lr_lat", raster_lrlat);
+        results.put("raster_ul_lon", rasterUllon);
+        results.put("raster_ul_lat", rasterUllat);
+        results.put("raster_lr_lon", rasterLrlon);
+        results.put("raster_lr_lat", rasterLrlat);
         results.put("depth", depth);
         results.put("query_success", true);
 
+        /*
         System.out.println("------------ OUTPUT ------------ ");
         for (Map.Entry<String, Object> a : results.entrySet()) {
             System.out.println(a.getKey() + ": " + a.getValue());
         }
         System.out.println("------------ END OUTPUT ------------ ");
+        */
 
         return results;
     }
 
-    /* Twelve Images output
-    raster_ul_lon=-122.2998046875
-    >>            -122.2998046875
-    raster_lr_lon=-122.2119140625
-    >>            -122.18994140625 << error since extra column
-    raster_lr_lat=37.82280243352756
-    >>            37.82280243352757
-    raster_ul_lat=37.87484726881516
-    >>            37.87484726881516
-     */
-
-    public int getCol(double lon, int depth){
-        double w_delta = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
+    private int getCol(double lon, int depth) {
+        // if lon is larger than ROOT_LRLON, then return largest possible column available
+        if (lon > Constants.ROOT_LRLON) {
+            return  (int) Math.pow(2, depth) - 1;
+        }
 
         int col = 0;
-        //System.out.println("lon " + lon);
-        while(lrlon(col, depth) < lon) {
+        while (lrlon(col, depth) < lon) {
             col++;
-            //System.out.println(lrlon(col, depth) + " -> col: " + col);
         }
         return col;
     }
 
-    public int getRow(double lat, int depth) {
-        double h_delta = (Constants.ROOT_ULLAT - Constants.ROOT_LRLAT) / Math.pow(2, depth);
+    private int getRow(double lat, int depth) {
+        // if lat is smaller than ROOT_LRLAT, then return largest possible row available
+        if (lat < Constants.ROOT_LRLAT) {
+            return  (int) Math.pow(2, depth) - 1;
+        }
+
         int row = 0;
-        while(lrlat(row, depth) > lat) {
+        while (lrlat(row, depth) > lat) {
             row++;
         }
         return row;
     }
 
-    /*
-    public int getLCol(double lrlon, int depth){
-        double w_delta = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
-
-        int lcol = 0;
-        while(lrlon(lcol, depth) < lrlon) {
-            lcol++;
-        }
-        return lcol;
-    }*/
-
-    public double ullon(int col, int depth){
-        double w_delta = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
-
-        if (col == 0){
+    private double ullon(int col, int depth) {
+        double wDelta = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
+        if (col == 0) {
             return Constants.ROOT_ULLON;
         }
 
-        double ullon = Constants.ROOT_ULLON;
+        double ullon = Constants.ROOT_ULLON; // start at the leftmost (negative) position
         for (int c = 1; c <= col; c++) {
-            ullon += w_delta;
+            ullon += wDelta; // increase by w_delta
 
         }
         return ullon;
     }
 
-    public double lrlon(int col, int depth){
-        double w_delta = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
-        return ullon(col, depth) + w_delta;
+    private double lrlon(int col, int depth) {
+        double wDelta = (Constants.ROOT_LRLON - Constants.ROOT_ULLON) / Math.pow(2, depth);
+        return ullon(col, depth) + wDelta;
     }
 
-    public double ullat(int row, int depth){
-        double h_delta = (Constants.ROOT_ULLAT - Constants.ROOT_LRLAT) / Math.pow(2, depth);
-        if (row == 0){
+    private double ullat(int row, int depth) {
+        double hDelta = (Constants.ROOT_ULLAT - Constants.ROOT_LRLAT) / Math.pow(2, depth);
+        if (row == 0) {
             return Constants.ROOT_ULLAT;
         }
 
-        double ullat = Constants.ROOT_ULLAT;
+        double ullat = Constants.ROOT_ULLAT; // start at the topmost (positive) position
         for (int c = 1; c <= row; c++) {
-            ullat -= h_delta;
+            ullat -= hDelta; // decrease by h_delta at given depth
 
         }
         return ullat;
     }
 
-    public double lrlat(int row, int depth){
-        double h_delta = (Constants.ROOT_ULLAT - Constants.ROOT_LRLAT) / Math.pow(2, depth);
-        return ullat(row, depth) - h_delta;
+    private double lrlat(int row, int depth) {
+        double hDelta = (Constants.ROOT_ULLAT - Constants.ROOT_LRLAT) / Math.pow(2, depth);
+        return ullat(row, depth) - hDelta; // just add h_delta to ullat
     }
 
-
-    private String[][] get_images(int ulRow, int ulCol, int lrRow , int lrCol, int depth) {
+    /**
+     * Generates an grid of image tiles names to be used in the front-end rastering
+     * @param ulRow the upper left tile row-coordinate
+     * @param ulCol the upper left tile col-coordinate
+     * @param lrRow the lower right tile row-coordinate
+     * @param lrCol the lower right tile col-coordinate
+     * @param depth the depth (resolution)
+     * @return grid of image names
+     */
+    private String[][] getImages(int ulRow, int ulCol, int lrRow, int lrCol, int depth) {
         int rows = (lrRow - ulRow) + 1;
         int cols = (lrCol - ulCol) + 1;
 
         String[][] images = new String[rows][cols];
-        System.out.println("Matrix: " + (rows) + "x" + (cols));
-        for(int row = 0; row < rows; row++) {
+        for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                images[row][col] = "d" + depth + "_x" + (ulCol+ col) + "_y" + (ulRow + row) + ".png";
-                System.out.print(images[row][col] + " ");
+                images[row][col] = "d" + depth + "_x" + (ulCol + col)
+                        + "_y" + (ulRow + row) + ".png";
             }
-            System.out.println();
         }
         return images;
     }
@@ -237,41 +224,35 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
 
     /**
      * Calculates the longitudinal distance per pixel (LonDPP)
-     * LonDPP = (lower right longitude − upper left longitude) / width of the image (or box) in pixels
+     * LonDPP = (lower right longitude − upper left longitude) / width of
+     * the image (or box) in pixels
      * @param ullon upper left longitude
      * @param lrlon lower right longitude
-     * @param w_res screen width resolution
+     * @param wres screen width resolution
      * @return LonDPP
      */
-    private double getLonDPP(double ullon, double lrlon, double w_res) {
-        return (lrlon - ullon) / w_res;
+    private double getLonDPP(double ullon, double lrlon, double wres) {
+        return (lrlon - ullon) / wres;
     }
 
     /**
      * Calculates the appropriate resolution depth level
      * @param ullon upper left longitude
      * @param lrlon lower right longitude
-     * @param w_res screen width resolution
+     * @param wres screen width resolution
      * @return
      */
-    private int getDepth(double ullon, double lrlon, double w_res) {
-        double targetLonDPP = getLonDPP(ullon, lrlon, w_res);
-        double maxLonDPP = getLonDPP(Constants.ROOT_ULLON, Constants.ROOT_LRLON, Constants.TILE_SIZE);
-        double currentLonDPP = maxLonDPP;
+    private int getDepth(double ullon, double lrlon, double wres) {
+        double targetLDPP = getLonDPP(ullon, lrlon, wres);
+        double maxLDPP = getLonDPP(Constants.ROOT_ULLON, Constants.ROOT_LRLON, Constants.TILE_SIZE);
+        double currentLonDPP = maxLDPP;
         int maxDepth = 7;
         int targetDepth = 0;
 
-        while (currentLonDPP > targetLonDPP && targetDepth < maxDepth){
-            //root_lrlon = (root_ullon + root_lrlon) / 2; // midpoint
-            //currentLonDPP = getLonDPP(root_ullon, root_lrlon, Constants.TILE_SIZE);
+        while (currentLonDPP > targetLDPP && targetDepth < maxDepth) {
             targetDepth += 1;
-            currentLonDPP = maxLonDPP / (Math.pow(2, targetDepth));
-
-            //System.out.println("target: " + targetLonDPP + " current: " + currentLonDPP + "level: " + targetDepth);
+            currentLonDPP = maxLDPP / (Math.pow(2, targetDepth));
         }
-
-
-
         return targetDepth;
     }
 

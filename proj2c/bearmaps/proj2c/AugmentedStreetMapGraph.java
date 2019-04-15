@@ -1,8 +1,11 @@
 package bearmaps.proj2c;
 
+//import bearmaps.hw4.WeirdSolver;
 import bearmaps.hw4.streetmap.Node;
 import bearmaps.hw4.streetmap.StreetMapGraph;
+//import bearmaps.proj2ab.KDTree;
 import bearmaps.proj2ab.Point;
+import bearmaps.proj2ab.WeirdPointSet;
 
 import java.util.*;
 
@@ -11,14 +14,36 @@ import java.util.*;
  * Specifically, it supports the following additional operations:
  *
  *
- * @author Alan Yao, Josh Hug, ________
+ * @author Alan Yao, Josh Hug, Daniel Vazquez
  */
 public class AugmentedStreetMapGraph extends StreetMapGraph {
+
+    //private KDTree kdTree;
+    private HashMap<Point, Node> vertex;
+    private WeirdPointSet weirdPS;
 
     public AugmentedStreetMapGraph(String dbPath) {
         super(dbPath);
         // You might find it helpful to uncomment the line below:
-        // List<Node> nodes = this.getNodes();
+        List<Node> nodes = this.getNodes();
+        // create list of points
+        ArrayList<Point> points = new ArrayList<>();
+        // add points to KDTree
+        vertex = new HashMap<>();
+
+        // fill out data structures
+        for (Node node: nodes) {
+            // avoid vertex with no neighbors
+            if (this.neighbors(node.id()).size() != 0) {
+                Point newPoint = new Point(node.lon(), node.lat());
+                points.add(newPoint);
+                vertex.put(newPoint, node);
+            }
+        }
+        //System.out.println("POINTS: " + points.size());
+        // feed kdTree with point list
+        //kdTree = new KDTree(points);
+        weirdPS = new WeirdPointSet(points);
     }
 
 
@@ -30,7 +55,9 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * @return The id of the node in the graph closest to the target.
      */
     public long closest(double lon, double lat) {
-        return 0;
+        //Point closest = kdTree.nearest(lon, lat);
+        Point closest = weirdPS.nearest(lon, lat);
+        return vertex.get(closest).id();
     }
 
 
