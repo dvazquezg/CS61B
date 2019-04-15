@@ -21,6 +21,9 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
     //private KDTree kdTree;
     private HashMap<Point, Node> vertex;
     private WeirdPointSet weirdPS;
+    private MyTrieSet magicTrie;
+    private HashMap<String, String> trieToPlace;
+    private HashMap<String, Node> magicMap;
 
     public AugmentedStreetMapGraph(String dbPath) {
         super(dbPath);
@@ -30,6 +33,9 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
         ArrayList<Point> points = new ArrayList<>();
         // add points to KDTree
         vertex = new HashMap<>();
+        magicTrie = new MyTrieSet();
+        trieToPlace = new HashMap<>();
+        magicMap = new HashMap<>();
 
         // fill out data structures
         for (Node node: nodes) {
@@ -39,6 +45,15 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
                 points.add(newPoint);
                 vertex.put(newPoint, node);
             }
+
+            //--- gold points
+            if (node.name() != null) {
+                String cleanedName = cleanString(node.name());
+                magicTrie.add(cleanedName);
+                trieToPlace.put(cleanedName, node.name());
+                magicMap.put(node.name(), node);
+            }
+
         }
         //System.out.println("POINTS: " + points.size());
         // feed kdTree with point list
@@ -70,6 +85,11 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * cleaned <code>prefix</code>.
      */
     public List<String> getLocationsByPrefix(String prefix) {
+        List<String> keys = magicTrie.keysWithPrefix(cleanString(prefix));
+        List<String> fullNames = new LinkedList<>();
+        for (String key : keys) {
+            fullNames.add(trieToPlace.get(key));
+        }
         return new LinkedList<>();
     }
 
@@ -87,7 +107,20 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * "id" -> Number, The id of the node. <br>
      */
     public List<Map<String, Object>> getLocations(String locationName) {
-        return new LinkedList<>();
+        List<Map<String, Object>> magicList = new ArrayList<>();
+        List<String> places = getLocationsByPrefix(locationName);
+
+        for (String place : places) {
+            Map<String, Object> result = new HashMap<>();
+            Node node = magicMap.get(place);
+            result.put("lat", node.lat());
+            result.put("lon", node.lon());
+            result.put("name", node.name());
+            result.put("id", node.id());
+            magicList.add(result);
+        }
+
+        return magicList;
     }
 
 

@@ -214,7 +214,58 @@ public class TestRasterAPIHandler {
         System.out.println("lrCol: " + d.getCol(lrlon, depth));
         System.out.println("ulRow: " + d.getRow(ullat, depth));
         System.out.println("lrRow: " + d.getRow(lrlat, depth));
+
     }
-    */
+
+    @Test
+    public void TestAG() {
+        RasterAPIHandler d = new RasterAPIHandler();
+
+        double lrlon=854.4210921174251;
+        double ullon=987.1836865949767;
+        double w=454.61779318520195;
+        double h=827.6077574243783;
+        double ullat=481.2997641696711;
+        double lrlat=85.15802634796614;
+
+        Map<String, Object> results = new HashMap<>();
+
+        //getting required data
+        boolean outBounds = d.isOutOfBounds(ullon, ullat, lrlon, lrlat); // check if data is out of bounds
+        System.out.println("Out of bounds: " + outBounds);
+        int depth = outBounds ? 0 : d.getDepth(ullon, lrlon, w); // depth level
+        int ulRow = outBounds ? 0 : d.getRow(ullat, depth); // y_cord first tile
+        int ulCol = outBounds ? 0 : d.getCol(ullon, depth); // x_cord first tile
+        int lrRow = outBounds ? 0 : d.getRow(lrlat, depth); // y_cord last tile
+        int lrCol = outBounds ? 0 : d.getCol(lrlon, depth); // x_cord last tile
+        double rasterUllon = d.ullon(ulCol, depth); // lon first tile (upper left corner)
+        double rasterUllat = d.ullat(ulRow, depth); // lat first tile (upper left corner)
+        double rasterLrlon = d.lrlon(lrCol, depth); // lon last tile (lower right corner)
+        double rasterLrlat = d.lrlat(lrRow, depth); // lat last tile (lower right corner)
+        String[][] images = d.getImages(ulRow, ulCol,  lrRow, lrCol, depth);
+
+        // filling response Map
+        results.put("render_grid", images);
+        results.put("raster_ul_lon", rasterUllon);
+        results.put("raster_ul_lat", rasterUllat);
+        results.put("raster_lr_lon", rasterLrlon);
+        results.put("raster_lr_lat", rasterLrlat);
+        results.put("depth", depth);
+        results.put("query_success", true);
+
+
+        System.out.println("------------ OUTPUT ------------ ");
+        for (Map.Entry<String, Object> a : results.entrySet()) {
+            System.out.println(a.getKey() + ": " + a.getValue());
+        }
+        for (int row = 0; row < images.length; row++) {
+            for (int col = 0; col < images[0].length; col++) {
+                System.out.println(images[row][col]);
+            }
+        }
+        System.out.println("------------ END OUTPUT ------------ ");
+
+    }*/
+
 
 }

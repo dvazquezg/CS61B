@@ -103,6 +103,18 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         */
 
         //getting required data
+
+
+
+        boolean outBounds = isOutOfBounds(ullon, ullat, lrlon, lrlat); // check if data is out of bounds
+
+        // check that coordinates are in order
+        if (lrlon < ullon || lrlat > ullat) {
+            return queryFail();
+        }
+        // make sure query box contains or partially contains available map
+        
+
         int depth = getDepth(ullon, lrlon, wres); // depth level
         int ulRow = getRow(ullat, depth); // y_cord first tile
         int ulCol = getCol(ullon, depth); // x_cord first tile
@@ -134,10 +146,26 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         return results;
     }
 
+    private boolean checkCoordinateOrder(double ullon, double ullat, double lrlon, double lrlat) {
+        return false;
+    }
+
+
+    private boolean isOutOfBounds(double ullon, double ullat, double lrlon, double lrlat) {
+        return ullon < Constants.ROOT_ULLON || ullon > Constants.ROOT_LRLON &&
+               lrlon < Constants.ROOT_ULLON || lrlon > Constants.ROOT_LRLON &&
+               ullat < Constants.ROOT_LRLAT || ullat > Constants.ROOT_ULLAT &&
+               lrlat < Constants.ROOT_LRLAT || lrlat > Constants.ROOT_ULLAT;
+    }
+
     private int getCol(double lon, int depth) {
-        // if lon is larger than ROOT_LRLON, then return largest possible column available
+        // if lon is larger than ROOT_LRLON, then return largest possible column value
         if (lon > Constants.ROOT_LRLON) {
-            return  (int) Math.pow(2, depth) - 1;
+            return (int) Math.pow(2, depth) - 1;
+        }
+        // if lon is smaller than ROOT_ULLON, then return smallest possible column value
+        if(lon < Constants.ROOT_ULLON) {
+            return 0;
         }
 
         int col = 0;
@@ -148,9 +176,14 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
     }
 
     private int getRow(double lat, int depth) {
+        // if lat is larger than ROOT_ULLAT, then return smallest possible row available
+        if (lat > Constants.ROOT_ULLAT) {
+            return 0;
+        }
+
         // if lat is smaller than ROOT_LRLAT, then return largest possible row available
         if (lat < Constants.ROOT_LRLAT) {
-            return  (int) Math.pow(2, depth) - 1;
+            return (int) Math.pow(2, depth) - 1;
         }
 
         int row = 0;
@@ -245,13 +278,13 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
     private int getDepth(double ullon, double lrlon, double wres) {
         double targetLDPP = getLonDPP(ullon, lrlon, wres);
         double maxLDPP = getLonDPP(Constants.ROOT_ULLON, Constants.ROOT_LRLON, Constants.TILE_SIZE);
-        double currentLonDPP = maxLDPP;
+        double currentLonDPP = maxLDPP; // lowest resolution (a pixel represents lost of feet)
         int maxDepth = 7;
         int targetDepth = 0;
 
         while (currentLonDPP > targetLDPP && targetDepth < maxDepth) {
             targetDepth += 1;
-            currentLonDPP = maxLDPP / (Math.pow(2, targetDepth));
+            currentLonDPP = maxLDPP / (Math.pow(2, targetDepth)); // increase resolution
         }
         return targetDepth;
     }
@@ -271,6 +304,7 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
 
     private Map<String, Object> queryFail() {
         Map<String, Object> results = new HashMap<>();
+        /*
         results.put("render_grid", null);
         results.put("raster_ul_lon", 0);
         results.put("raster_ul_lat", 0);
@@ -278,6 +312,16 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         results.put("raster_lr_lat", 0);
         results.put("depth", 0);
         results.put("query_success", false);
+        */
+        results.put("render_grid",  new String[][]{{"d0_x0_y0.png"}});
+        results.put("raster_ul_lon", Constants.ROOT_ULLON);
+        results.put("raster_ul_lat", Constants.ROOT_ULLAT);
+        results.put("raster_lr_lon", Constants.ROOT_LRLON);
+        results.put("raster_lr_lat", Constants.ROOT_LRLAT);
+        results.put("depth", 0);
+        results.put("query_success", true);
+
+
         return results;
     }
 
