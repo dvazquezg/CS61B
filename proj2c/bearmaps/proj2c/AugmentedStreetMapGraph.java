@@ -23,7 +23,8 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
     private WeirdPointSet weirdPS;
     private MyTrieSet magicTrie;
     private HashMap<String, String> trieToPlace;
-    private HashMap<String, Node> magicMap;
+    //private HashMap<String, Node> magicMap;
+    private HashMap<String, List<Node>> magicMap;
 
     public AugmentedStreetMapGraph(String dbPath) {
         super(dbPath);
@@ -51,7 +52,13 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
                 String cleanedName = cleanString(node.name());
                 magicTrie.add(cleanedName);
                 trieToPlace.put(cleanedName, node.name());
-                magicMap.put(node.name(), node);
+                if (magicMap.containsKey(cleanedName)){
+                    magicMap.get(cleanedName).add(node);
+                } else {
+                    List<Node> places = new ArrayList<>();
+                    places.add(node);
+                    magicMap.put(cleanedName, places);
+                }
             }
 
         }
@@ -87,10 +94,15 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
     public List<String> getLocationsByPrefix(String prefix) {
         List<String> keys = magicTrie.keysWithPrefix(cleanString(prefix));
         List<String> fullNames = new LinkedList<>();
-        for (String key : keys) {
-            fullNames.add(trieToPlace.get(key));
+        if (keys != null) {
+            for (String key : keys) {
+                if (trieToPlace.get(key) != null) {
+                    fullNames.add(trieToPlace.get(key));
+                }
+            }
+
         }
-        return new LinkedList<>();
+        return fullNames;
     }
 
     /**
@@ -108,16 +120,18 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      */
     public List<Map<String, Object>> getLocations(String locationName) {
         List<Map<String, Object>> magicList = new ArrayList<>();
-        List<String> places = getLocationsByPrefix(locationName);
-
-        for (String place : places) {
-            Map<String, Object> result = new HashMap<>();
-            Node node = magicMap.get(place);
-            result.put("lat", node.lat());
-            result.put("lon", node.lon());
-            result.put("name", node.name());
-            result.put("id", node.id());
-            magicList.add(result);
+        String name = cleanString(locationName);
+        List<Node> places = magicMap.get(name);
+        //System.out.println(locationName);
+        if (places != null){
+            for (Node node : places) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("lat", node.lat());
+                result.put("lon", node.lon());
+                result.put("name", node.name());
+                result.put("id", node.id());
+                magicList.add(result);
+            }
         }
 
         return magicList;
