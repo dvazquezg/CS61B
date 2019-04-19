@@ -55,6 +55,7 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
                 if (trieToPlace.containsKey(cleanedName)) {
                     trieToPlace.get(cleanedName).add(node.name());
                 } else {
+                    // may be places with same cleaned names, but we store unique names of places
                     HashSet<String> originalNames = new HashSet<>();
                     originalNames.add(node.name());
                     trieToPlace.put(cleanedName, originalNames);
@@ -106,7 +107,7 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
         if (keys != null) {
             for (String key : keys) { // iterate over list of cleaned names from trie
                 if (trieToPlace.get(key) != null) { // verify that name exist in map
-                    for (String fullname : trieToPlace.get(key)) { // iterate over all possible places
+                    for (String fullname : trieToPlace.get(key)) { // iterate over possible places
                         fullNames.add(fullname);
                     }
                 }
