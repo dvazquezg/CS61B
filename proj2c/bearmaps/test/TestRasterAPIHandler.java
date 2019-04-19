@@ -1,5 +1,7 @@
 package bearmaps.test;
 
+import bearmaps.proj2c.AugmentedStreetMapGraph;
+import org.apache.commons.math3.analysis.function.Constant;
 import org.junit.Before;
 import org.junit.Test;
 import bearmaps.proj2c.server.handler.impl.RasterAPIHandler;
@@ -19,6 +21,8 @@ import java.util.Arrays;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import bearmaps.proj2c.utils.Constants;
 
 /** Test of the rastering part of the assignment.*/
 public class TestRasterAPIHandler {
@@ -266,6 +270,30 @@ public class TestRasterAPIHandler {
         System.out.println("------------ END OUTPUT ------------ ");
 
     }*/
+    @Test
+    public void retrieve(){
+        AugmentedStreetMapGraph g = new AugmentedStreetMapGraph(Constants.OSM_DB_PATH);
+        List<String> places = null;
+        places = g.getLocationsByPrefix("p");
+
+        int count = 0;
+        if (places != null) {
+            for (String str : places) {
+                System.out.println(str);
+                count++;
+            }
+        }
+
+        System.out.println("Count : " + count);
+        //System.out.println("Result: '" + result + "'");
+
+        //System.out.println("cleaned: '" + g.cleanString("Peet's Coffee & Tea") + "'");
+        System.out.println("original: '" + g.getLocationsByPrefix("Peet's Coffee & Tea") + "'");
+        //System.out.println("cleaned: '" + g.cleanString("Peets Coffee & Tea") + "'");
+        System.out.println("original: '" + g.getLocationsByPrefix("Peets Coffee & Tea") + "'");
 
 
+        //AugmentedStreetMapGraph.getLocations()
+
+    }
 }

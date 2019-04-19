@@ -22,7 +22,7 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
     private HashMap<Point, Node> vertex;
     private WeirdPointSet weirdPS;
     private MyTrieSet magicTrie;
-    private HashMap<String, String> trieToPlace;
+    private HashMap<String, HashSet<String>> trieToPlace;
     //private HashMap<String, Node> magicMap;
     private HashMap<String, List<Node>> magicMap;
 
@@ -51,8 +51,17 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
             if (node.name() != null) {
                 String cleanedName = cleanString(node.name());
                 magicTrie.add(cleanedName);
-                trieToPlace.put(cleanedName, node.name());
-                if (magicMap.containsKey(cleanedName)){
+                // add to cleaned - original name map
+                if (trieToPlace.containsKey(cleanedName)) {
+                    trieToPlace.get(cleanedName).add(node.name());
+                } else {
+                    HashSet<String> originalNames = new HashSet<>();
+                    originalNames.add(node.name());
+                    trieToPlace.put(cleanedName, originalNames);
+                }
+
+                // add to cleaned name - Node map
+                if (magicMap.containsKey(cleanedName)) {
                     magicMap.get(cleanedName).add(node);
                 } else {
                     List<Node> places = new ArrayList<>();
@@ -92,12 +101,14 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * cleaned <code>prefix</code>.
      */
     public List<String> getLocationsByPrefix(String prefix) {
-        List<String> keys = magicTrie.keysWithPrefix(cleanString(prefix));
         List<String> fullNames = new LinkedList<>();
+        List<String> keys = magicTrie.keysWithPrefix(cleanString(prefix));
         if (keys != null) {
-            for (String key : keys) {
-                if (trieToPlace.get(key) != null) {
-                    fullNames.add(trieToPlace.get(key));
+            for (String key : keys) { // iterate over list of cleaned names from trie
+                if (trieToPlace.get(key) != null) { // verify that name exist in map
+                    for (String fullname : trieToPlace.get(key)) { // iterate over all possible places
+                        fullNames.add(fullname);
+                    }
                 }
             }
 
@@ -123,7 +134,7 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
         String name = cleanString(locationName);
         List<Node> places = magicMap.get(name);
         //System.out.println(locationName);
-        if (places != null){
+        if (places != null) {
             for (Node node : places) {
                 Map<String, Object> result = new HashMap<>();
                 result.put("lat", node.lat());
