@@ -2,6 +2,7 @@ package byow.Core;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import byow.TileEngine.Tileset;
 
 public class Engine {
     TERenderer ter = new TERenderer();
@@ -46,7 +47,22 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        TETile[][] finalWorldFrame = null;
+        // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
+        TERenderer ter = new TERenderer();
+        ter.initialize(WIDTH, HEIGHT);
+
+        TETile[][] finalWorldFrame;
+
+        // check if given input is valid
+        ArgumentAnalyzer analyzer = new ArgumentAnalyzer(input);
+        if (!analyzer.success()) {
+            return null;
+        }
+
+        RandomGen rgen= new RandomGen(analyzer.getSeed()); // random number generator
+        finalWorldFrame = new GridCreator(WIDTH, HEIGHT, rgen).grid(); // get full grid
+        ter.renderFrame(finalWorldFrame); // draw the world to the screen
+
         return finalWorldFrame;
     }
 }
