@@ -1,6 +1,6 @@
 package byow.Core;
 
-public class Tile implements Point{
+public class Tile implements Point {
     private int xpos;
     private int ypos;
 
