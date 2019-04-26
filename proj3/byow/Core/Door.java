@@ -3,8 +3,6 @@ package byow.Core;
 import byow.Core.Constants.*;
 import byow.TileEngine.TETile;
 
-import java.nio.file.FileAlreadyExistsException;
-
 public class Door implements Point {
     private int xpos;
     private int ypos;
@@ -57,5 +55,9 @@ public class Door implements Point {
         info += "Direction: " + dir + ", ";
         info += "Tile: " + tile;
         return info;
+    }
+
+    public boolean samePos(Door other) {
+        return this.xpos == other.getXpos() && this.ypos == other.getYpos();
     }
 }

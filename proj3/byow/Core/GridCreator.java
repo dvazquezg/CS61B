@@ -15,13 +15,12 @@ public class GridCreator {
     protected static ArrayList<Room> rooms;          // List of rooms in this grid
     protected ArrayList<Room> availableRooms; // Dynamic list of room who have disconnected doors
     protected static ArrayList<Hallway> hallways;    // List of hallways in this grid
-    protected TETile rWall = Tileset.WALL;    // Default room's wall tile
     protected TETile[][] world;     // The world to be generated
 
     public GridCreator(int columns, int rows, RandomGen rgen){
         this.columns = columns;
         this.rows = rows;
-        this.numRooms = rgen.random(6, 15);
+        this.numRooms = rgen.random(10, 15);
         this.world = new TETile[columns][rows];
         System.out.println("rows: " + rows + ", cols: " + columns);
         System.out.println("Rooms to generate: " + this.numRooms);
@@ -39,38 +38,40 @@ public class GridCreator {
         // There should be one less corridor than there is rooms.
         hallways = new ArrayList<>();
 
+        /////////////// COLLISION TEST
+        //Room trickyRoom = new Room(20, 15, 8, 5);
+        //rooms.add(trickyRoom);
+        //Room trickyRoom2 = new Room(20, 15, 8, 5);
+        //rooms.add(trickyRoom2);
+        ///////////// END TEST
+
         // create first room
-        Room firstRoom = new Room(columns, rows, rWall, rgen);
+        Room firstRoom = new Room(columns, rows, rgen);
         rooms.add(firstRoom);
         availableRooms.add(firstRoom);
 
-        // main loop, fills
-        while (rooms.size() < numRooms) {
+        // main loop, creates world
+        int createRooms = 30;
+        //while (rooms.size() < numRooms) {
+        while (hasDisconnectedDoors()) {
             Room currentRoom = getRandRoomWithAvalDoors(rgen);
+            Hallway newHallway = new Hallway(currentRoom, rgen);
 
-            Hallway newHallway = new Hallway(columns, rows, rWall, currentRoom, rgen);
-            hallways.add(newHallway);
+            if (newHallway.wasCreated()) {
+                hallways.add(newHallway);
+                Room newRoom = new Room(newHallway, rgen);
+                if (newRoom.wasCreated()) {
+                    System.out.println("Created!!");
+                    rooms.add(newRoom);
+                    availableRooms.add(newRoom);
+                }
+            }
+            createRooms -= 1;
+            System.out.println("Size hallways:" + hallways.size());
+            removeRoomsWithNoAvalDoors();
 
-            //Room newRoom = new Room(columns, rows, rWall, newHallway, rgen);
-            //rooms.add(newRoom);
-            //availableRooms.add(newRoom);
-
-            //removeRoomsWithNoAvalDoors();
-
-            break;
+            //break;
         }
-
-
-
-        // from current rooms chose a room with available doors
-        // create hallway by passing selected room
-        // mark door of room used to connect hallway as connected
-        // create a room at the end of hallway and add it to list
-        // repeat until number of room is completed
-        // when adding doors we will carve only connecting doors.
-
-
-
         // add rooms to grid
         addRoomsToGrid();
         // add hallways to grid
@@ -136,26 +137,23 @@ public class GridCreator {
                         //y = room.yupr; // jump to upper row to avoid center
                         world[x][y] = Tileset.FLOOR;
                     } else {
-                        world[x][y] = TETile.colorVariant(Tileset.WALL, 20, 20, 20, r);
+                        world[x][y] = TETile.colorVariant(room.getWallTile(), 20, 20, 20, r);
                         //Tile current = new Tile(x, y);
                     }
                 }
             }
+            System.out.println("printing: " + room);
         }
     }
 
     private void addHallwaysToGrid() {
         Random r = new Random();
         for (Hallway hallway : hallways) {
-            if (hallway.dir == Direction.EAST || hallway.dir == Direction.WEST) {
-                addHorizontalHallway(hallway, r);
-            } else {
-                addVerticalHallway(hallway, r);
-            }
+            addHallway(hallway, r);
         }
     }
 
-    private void addHorizontalHallway(Hallway hallway, Random r) {
+    private void addHallway(Hallway hallway, Random r) {
         for (int x = hallway.xlowl; x <= hallway.xupr; x += 1) {
             for (int y = hallway.ylowl; y <= hallway.yupr; y += 1) {
                 if (x > hallway.xlowl && x < hallway.xupr && y > hallway.ylowl && y < hallway.yupr) {
@@ -169,28 +167,56 @@ public class GridCreator {
         }
     }
 
-    private void addVerticalHallway(Hallway hallway, Random r) {
-
-    }
-
     private void addDoorsToGrid() {
         for (Room room : rooms) {
+            if(room.doors == null){
+                continue; //<<<<<<<< delete
+            }
             for (Door door : room.doors) {
                 if (door.isConnected()) {
-                    door.setTile(Tileset.FLOOR); // if connected the carve door
+                    door.setTile(Tileset.FLOOR); // if connected then is carved show floor
                 }
                 world[door.getXpos()][door.getYpos()] = door.getTile();
             }
         }
 
         for (Hallway hallway : hallways) {
+            if(hallway.doors == null){
+                continue; //<<<<<<<< delete
+            }
             for (Door door : hallway.doors) {
                 if (door.isConnected()) {
                     door.setTile(Tileset.FLOOR); // if connected the carve door
                 }
+                System.out.println(">>>>" + door);
                 world[door.getXpos()][door.getYpos()] = door.getTile();
             }
         }
+    }
+
+    public boolean hasDisconnectedDoors(){
+        for(Room room : rooms) {
+            if(room.doors == null){
+                continue;
+            }
+            for (Door door : room.doors) {
+                if (!door.isConnected()) {
+                    return true;
+                }
+            }
+        }
+
+        for(Hallway hallway : hallways) {
+            if(hallway.doors == null){
+                continue;
+            }
+            for (Door door : hallway.doors) {
+                if (!door.isConnected()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static boolean overlaps(InteriorSpace space1, InteriorSpace space2){

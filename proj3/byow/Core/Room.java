@@ -6,6 +6,8 @@ import byow.TileEngine.Tileset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import static byow.Core.Constants.*;
+import static byow.Core.GridCreator.isOutOfBounds;
+import static byow.Core.GridCreator.overlaps;
 
 public class Room implements InteriorSpace{
     protected int xlowl;                      // The x coordinate of the lower left tile of the room.
@@ -14,63 +16,314 @@ public class Room implements InteriorSpace{
     protected int yupr;                       // The y coordinate of the upper right tile of the room.
     protected int roomWidth;                  // The room's width in tiles
     protected int roomHeight;                 // The room's height in tiles
-    protected TETile roomWall;                // The room's wall tile
-    protected TETile doorTile = Tileset.SAND; // The default door tile type
+    protected int xposd;                      // The x coordinate of connecting door to incoming hallway
+    protected int yposd;                      // The y coordinate of connecting door to incoming hallway
+    protected TETile wallTile = WALLTILE;     // The room's wall tile
+    protected TETile doorTile = DOORTILE;     // The default door tile type
     protected ArrayList<Door> doors;          // Array of rooms
-
+    protected boolean created = false;        // Flag to indicate if room was created or not
 
     /**
      * Creates the first room of the world approximately in the center
      * @param columns grid width
      * @param rows grid height
-     * @param roomWall tile for room's wall
      * @param rgen random generator
      */
-    public Room(int columns, int rows, TETile roomWall, RandomGen rgen) {
+    public Room(int columns, int rows, RandomGen rgen) {
         this.roomWidth = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
         this.roomHeight = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
-        this.roomWall = roomWall;
         doors = new ArrayList<>();
-        xlowl = (int) (columns / 2f - roomWidth / 2f);
-        ylowl = (int) (rows / 2f - roomHeight / 2f);
+        // place first room in the middle of the grid
+        xlowl = (int) (columns / 2f - roomWidth / 2f); // W-36 E+36 || -29
+        ylowl = (int) (rows / 2f - roomHeight / 2f);// N+12 S-10
         xupr = xlowl + roomWidth - 1;
         yupr = ylowl + roomHeight - 1;
         setDoors(rgen, null); // null since there is no entering hallway
+        created = true;
     }
 
     /**
-     * Creates a room from entering hallway
-     * @param columns grid width
-     * @param rows grid height
-     * @param roomWall tile for room's wall
-     * @param hallway the entering hallway
+     * Creates a room from entering incomingHallway
+     * @param incomingHallway the entering incomingHallway
      * @param rgen random generator
      */
-    public Room(int columns, int rows, TETile roomWall, Hallway hallway, RandomGen rgen) {
-        this.roomWidth = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);//<<<< chenge
-        this.roomHeight = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
-        this.roomWall = roomWall;
+    public Room(Hallway incomingHallway, RandomGen rgen) {
+        Door enteringDoor = incomingHallway.getEndDoor();
         doors = new ArrayList<>();
-        xlowl = (int) (columns / 2f - roomWidth / 2f);
-        ylowl = (int) (rows / 2f - roomHeight / 2f);
-        xupr = xlowl + roomWidth - 1;
-        yupr = ylowl + roomHeight - 1;
 
-        //setDoors(rgen, hallway.dir);
+        System.out.println("HallWay: " + incomingHallway);
+        System.out.println("Door entering: " + enteringDoor);
+
+        makeRoom(incomingHallway, rgen);
+        // westRoom(incomingHallway, rgen);
     }
 
-    private void setDoors(RandomGen rgen, Direction enteringHallDir){
+    private void makeRoom(Hallway hallway, RandomGen rgen){
+        // set desire room size
+        int desiredWidth = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
+        int desiredHeight = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
+
+        System.out.println("Desired size: w: " + desiredWidth + ", h: " + desiredHeight);
+        Door connectingDoor = makeEnteringDoor(hallway);
+
+        // make dummy room of the smallest size possible & init dim instance variables
+        setSmallestSize(connectingDoor);
+
+        // try to reach desire size
+        while(!desiredSize(desiredWidth, desiredHeight)) {
+            System.out.println("current size: w: " + roomWidth + ", h: " + roomHeight);
+            if (!increaseSizeByOne(desiredWidth, desiredHeight, connectingDoor, rgen)) {
+                break;
+            }
+        }
+
+        System.out.println("final size: w: " + roomWidth + ", h: " + roomHeight);
+        System.out.println("Final version of this room: " + this);
+
+        // check if resulting room size is valid
+        if (validRoomSize()) {
+            // create doors for this room
+            setDoors(rgen, connectingDoor);
+            hallway.getEndDoor().connect();
+            connectingDoor.connect();
+            //connectingDoor.setTile(Tileset.AVATAR);//<<<<<remove
+            //doors.add(connectingDoor);//<<<<remove
+            //System.out.println("Final door" + connectingDoor);
+            created = true;
+        } else {
+            // remove incoming door from hallway since room cannot be created here
+            hallway.doors.remove(hallway.getEndDoor());
+            created = false;
+        }
+    }
+
+    private boolean increaseSizeByOne(int desiredWidth, int desiredHeight, Door connectingDoor, RandomGen rgen) {
+        // increase size by one as long as room dims does not exceed target dims
+        if (roomWidth < desiredWidth && increaseWidthByOne(connectingDoor, rgen)) {
+            return true;
+        }
+        if (roomHeight < desiredHeight && increaseHeightByOne(connectingDoor, rgen)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean increaseWidthByOne(Door connectingDoor, RandomGen rgen) {
+        // back up current size and corner coordinates
+        SizeBackup bestSize = new SizeBackup(xlowl, ylowl, xupr, yupr, roomWidth, roomHeight);
+        //boolean resized = false;
+        Direction doorDir = connectingDoor.getDir();
+        // increase width according new room's door placement
+
+        if (doorDir == Direction.WEST) {
+            // if connecting door faces West, extend eastward
+            xupr += 1;
+            roomWidth += 1;
+            if (!roomFits(this)) {
+                restoreBestSize(bestSize);
+                return false;
+            }
+            return true; // room was resized successfully
+        } else if (doorDir == Direction.EAST) {
+            // if connecting door faces East, extend westward
+            xlowl -= 1;
+            roomWidth += 1;
+            if (!roomFits(this)) {
+                restoreBestSize(bestSize);
+                return false;
+            }
+            return true; // room was resized successfully
+        } else {
+            // if connecting door faces North/South
+            int randomSide = rgen.random(0, 1); // choose random side to begin with
+            boolean extendWestward = (randomSide == 0);
+            // loop two times
+            for(int attempt = 1; attempt <= 2; attempt++) {
+                if (extendWestward) {
+                    // extend westward
+                    xupr += 1;
+                    extendWestward = false;
+                } else {
+                    // extend eastward
+                    xlowl -= 1;
+                    extendWestward = true;
+                }
+                roomWidth += 1;
+
+                if (roomFits(this)) {
+                    return true;
+                }
+                restoreBestSize(bestSize);
+            }
+            return false;
+        }
+    }
+
+    private boolean increaseHeightByOne(Door connectingDoor, RandomGen rgen) {
+        // back up current size and corner coordinates
+        SizeBackup bestSize = new SizeBackup(xlowl, ylowl, xupr, yupr, roomWidth, roomHeight);
+        //boolean resized = false;
+        Direction doorDir = connectingDoor.getDir();
+        // increase width according new room's door placement
+
+        if (doorDir == Direction.NORTH) {
+            // if connecting door faces North, extend southward
+            ylowl -= 1;
+            roomHeight += 1;
+            if (!roomFits(this)) {
+                restoreBestSize(bestSize);
+                return false;
+            }
+            return true; // room was resized successfully
+        } else if (doorDir == Direction.SOUTH) {
+            // if connecting door faces South, extend northward
+            yupr += 1;
+            roomHeight += 1;
+            if (!roomFits(this)) {
+                restoreBestSize(bestSize);
+                return false;
+            }
+            return true; // room was resized successfully
+        } else {
+            // if connecting door faces West/East
+            int randomSide = rgen.random(0, 1); // choose random side to begin with
+            boolean extendNorthward = (randomSide == 0);
+            // loop two times
+            for(int attempt = 1; attempt <= 2; attempt++) {
+                if (extendNorthward) {
+                    // extend northward
+                    yupr += 1;
+                    extendNorthward = false;
+                } else {
+                    // extend southward
+                    ylowl -= 1;
+                    extendNorthward = true;
+                }
+                roomHeight += 1;
+
+                if (roomFits(this)) {
+                    return true;
+                }
+                restoreBestSize(bestSize);
+                System.out.println("time: " + attempt);
+            }
+            return false;
+        }
+    }
+
+    public boolean validRoomSize() {
+        return this.roomWidth >= MIN_ROOM_SIDE
+                && this.roomHeight >= MIN_ROOM_SIDE;
+    }
+
+    private boolean desiredSize(int targetWidth, int targetHeight) {
+        return targetWidth == this.roomWidth
+                && targetHeight == this.roomHeight;
+    }
+
+    private void restoreBestSize(SizeBackup backup) {
+        xlowl = backup.getXlowl();
+        ylowl = backup.getYlowl();
+        xupr = backup.getXupr();
+        yupr = backup.getYupr();
+        roomWidth = backup.getRoomWidth();
+        roomHeight = backup.getRoomHeight();
+    }
+
+    private boolean roomFits(Room dummyRoom) {
+        // check if room is out of grid
+        if (isOutOfBounds(dummyRoom)) {
+            return false;
+        }
+        // check if dummyRoom can fit among other existing rooms
+        for (Room room : GridCreator.rooms) {
+            if (overlaps(dummyRoom, room)){
+                return false;
+            }
+        }
+        // check if dummyRoom can fit among other existing hallways
+        for (Hallway hallway : GridCreator.hallways) {
+            if (overlaps(dummyRoom, hallway)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void setSmallestSize(Door cdoor) {
+        Direction outDir = cdoor.getDir();
+        // set starting corner positions
+        xlowl = cdoor.getXpos();
+        xupr = cdoor.getXpos();
+        ylowl = cdoor.getYpos();
+        yupr = cdoor.getYpos();
+
+        // adjust corner so we create a 2 X 3 or 3 x 2 starting room
+        switch (outDir) {
+            case NORTH:
+                xlowl -= 1;
+                xupr += 1;
+                ylowl -= 1;
+                break;
+            case WEST:
+                xupr += 1;
+                ylowl -= 1;
+                yupr +=1;
+                break;
+            case SOUTH:
+                xlowl -= 1;
+                xupr += 1;
+                yupr += 1;
+                break;
+            case EAST:
+                xlowl -= 1;
+                ylowl -= 1;
+                yupr += 1;
+                break;
+        }
+
+        // calculate and set initial dimensions
+        roomWidth = xupr - xlowl + 1;
+        roomHeight = yupr - ylowl + 1;
+    }
+
+    private Door makeEnteringDoor(Hallway hallway) {
+        Direction inDir = hallway.getEndDoor().getDir();
+        Direction outDir = getOpositeDir(inDir);
+        // make position of door in new room equal to incoming door of hallway
+        xposd = hallway.getEndDoor().getXpos();
+        yposd = hallway.getEndDoor().getYpos();
+        // adjust location according to entering location
+        switch (inDir) {
+            case NORTH:
+                yposd += 1;
+                break;
+            case WEST:
+                xposd -= 1;
+                break;
+            case SOUTH:
+                yposd -= 1;
+                break;
+            case EAST:
+                xposd += 1;
+                break;
+        }
+        return new Door(xposd, yposd, doorTile, outDir);
+    }
+
+    private void setDoors(RandomGen rgen, Door connectingDoor){
         int ndoors;
         HashSet<Direction> usedDirs = new HashSet<>(); // hold used directions
-        // check if entering direction from hallway is provided
-        if (enteringHallDir == null) {
-            ndoors = rgen.random(1, 4); // can use 4 sides
+        // check if entering door is provided
+        if (connectingDoor == null) {
+            ndoors = rgen.random(1, 4); // first room: can be 1 or 4 doors
         } else {
-            // if a hallways in entering this
-            ndoors = rgen.random(1, 3); // can only use 3 sides
-            usedDirs.add(enteringHallDir); // add entering dir to used set
+            // if a hallways in entering this, then we must add connecting door
+            ndoors = rgen.random(2, 4); // make sure has the entry and at least one exit
+            usedDirs.add(connectingDoor.getDir()); // add opposite of entering direction
+            doors.add(connectingDoor);
+            ndoors -= 1;
         }
-        System.out.println("number of doors: " + ndoors);
 
         int indexDir = rgen.random(0, 3); // random starting index
         // create ndoors
@@ -85,6 +338,20 @@ public class Room implements InteriorSpace{
             }
             indexDir  = (indexDir  + 1) % 4; // move to the next direction
         }
+    }
+
+    private Direction getOpositeDir(Direction dir) {
+        switch (dir) {
+            case NORTH:
+                return Direction.SOUTH;
+            case WEST:
+                return Direction.EAST;
+            case SOUTH:
+                return Direction.NORTH;
+            case EAST:
+                return Direction.WEST;
+        }
+        return null;
     }
 
     /**
@@ -132,6 +399,7 @@ public class Room implements InteriorSpace{
         this.roomHeight = roomHeight;
         xupr = xlowl + roomWidth - 1;
         yupr = ylowl + roomHeight - 1;
+        System.out.println();
     }
 
     public String toString(){
@@ -159,7 +427,7 @@ public class Room implements InteriorSpace{
         if (doors.size() == 0) {
             return null;
         }
-        int randomIndex = rgen.random(0, doors.size() -1);
+        int randomIndex = rgen.random(0, doors.size() - 1);
         for (int i = 0; i < doors.size(); i++) {
             Door currentDoor = doors.get(randomIndex);
             if (!currentDoor.isConnected()) {
@@ -189,5 +457,21 @@ public class Room implements InteriorSpace{
     @Override
     public int getyupr() {
         return yupr;
+    }
+
+    public int getRoomWidth() {
+        return roomWidth;
+    }
+
+    public int getRoomHeight() {
+        return roomHeight;
+    }
+
+    public boolean wasCreated(){
+        return created;
+    }
+
+    public TETile getWallTile() {
+        return wallTile;
     }
 }
