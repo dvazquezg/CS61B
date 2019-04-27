@@ -48,8 +48,8 @@ public class Engine {
         // that works for many different input types.
 
         // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
-        TERenderer ter = new TERenderer();
-        ter.initialize(WIDTH, HEIGHT);
+        //TERenderer ter = new TERenderer();
+        //ter.initialize(WIDTH, HEIGHT);
 
         TETile[][] finalWorldFrame;
 
@@ -61,7 +61,7 @@ public class Engine {
 
         RandomGen rgen= new RandomGen(analyzer.getSeed()); // random number generator
         finalWorldFrame = new GridCreator(WIDTH, HEIGHT, rgen).grid(); // get world
-        ter.renderFrame(finalWorldFrame); // draw the world to the screen
+        //ter.renderFrame(finalWorldFrame); // draw the world to the screen
 
         return finalWorldFrame;
     }
