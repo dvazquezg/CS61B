@@ -2,7 +2,6 @@ package byow.Core;
 
 import byow.Core.Constants.*;
 import byow.TileEngine.TETile;
-import byow.TileEngine.Tileset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import static byow.Core.Constants.*;
@@ -48,22 +47,14 @@ public class Room implements InteriorSpace{
      * @param rgen random generator
      */
     public Room(Hallway incomingHallway, RandomGen rgen) {
-        Door enteringDoor = incomingHallway.getEndDoor();
         doors = new ArrayList<>();
-
-        System.out.println("HallWay: " + incomingHallway);
-        System.out.println("Door entering: " + enteringDoor);
-
         makeRoom(incomingHallway, rgen);
-        // westRoom(incomingHallway, rgen);
     }
 
     private void makeRoom(Hallway hallway, RandomGen rgen){
         // set desire room size
         int desiredWidth = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
         int desiredHeight = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
-
-        System.out.println("Desired size: w: " + desiredWidth + ", h: " + desiredHeight);
         Door connectingDoor = makeEnteringDoor(hallway);
 
         // make dummy room of the smallest size possible & init dim instance variables
@@ -71,14 +62,10 @@ public class Room implements InteriorSpace{
 
         // try to reach desire size
         while(!desiredSize(desiredWidth, desiredHeight)) {
-            System.out.println("current size: w: " + roomWidth + ", h: " + roomHeight);
             if (!increaseSizeByOne(desiredWidth, desiredHeight, connectingDoor, rgen)) {
                 break;
             }
         }
-
-        System.out.println("final size: w: " + roomWidth + ", h: " + roomHeight);
-        System.out.println("Final version of this room: " + this);
 
         // check if resulting room size is valid
         if (validRoomSize()) {
@@ -86,9 +73,6 @@ public class Room implements InteriorSpace{
             setDoors(rgen, connectingDoor);
             hallway.getEndDoor().connect();
             connectingDoor.connect();
-            //connectingDoor.setTile(Tileset.AVATAR);//<<<<<remove
-            //doors.add(connectingDoor);//<<<<remove
-            //System.out.println("Final door" + connectingDoor);
             created = true;
         } else {
             // remove incoming door from hallway since room cannot be created here
@@ -205,7 +189,6 @@ public class Room implements InteriorSpace{
                     return true;
                 }
                 restoreBestSize(bestSize);
-                System.out.println("time: " + attempt);
             }
             return false;
         }
@@ -399,7 +382,6 @@ public class Room implements InteriorSpace{
         this.roomHeight = roomHeight;
         xupr = xlowl + roomWidth - 1;
         yupr = ylowl + roomHeight - 1;
-        System.out.println();
     }
 
     public String toString(){

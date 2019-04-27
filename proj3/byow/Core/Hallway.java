@@ -43,7 +43,6 @@ public class Hallway implements InteriorSpace{
     private void makeHallway(Room room, RandomGen rgen) {
         Door door = room.getRandomAvailableDoor(rgen);// get a random door from given room
         this.dir = door.getDir();
-        System.out.println("Door Hallway dir choosed: " + dir);
         switch (dir) {
             case NORTH:
                 northHallway(door, room, rgen);
@@ -62,7 +61,6 @@ public class Hallway implements InteriorSpace{
 
     private void northHallway(Door door, Room room, RandomGen rgen) {
         length = rgen.random(MIN_HALLWAY_LEN, MAX_HALLWAY_LEN);
-
         xlowl = door.getXpos() - 1;
         ylowl = door.getYpos() + 1;
         xupr = door.getXpos() + 1;
@@ -74,7 +72,6 @@ public class Hallway implements InteriorSpace{
             yupr -= 1;
             dummyHallway = new Hallway(xlowl, ylowl, xupr, yupr);
         }
-        System.out.println("1: " + yupr);
 
         // check if overlaps with other rooms
         for (Room troom : GridCreator.rooms) {
@@ -85,8 +82,6 @@ public class Hallway implements InteriorSpace{
             }
         }
 
-        System.out.println("2: " + yupr);
-
         // check if overlaps with other hallways
         for (Hallway hallway : GridCreator.hallways) {
             while (overlaps(hallway, dummyHallway)) {
@@ -95,7 +90,6 @@ public class Hallway implements InteriorSpace{
                 dummyHallway = new Hallway(xlowl, ylowl, xupr, yupr);
             }
         }
-        System.out.println("3: " + yupr);
 
         // check if hallway ylowl is the same as door.ylowl (meaning is does not have space)
         if (this.yupr > door.getYpos()) {
@@ -184,7 +178,6 @@ public class Hallway implements InteriorSpace{
             xlowl += 1;
             dummyHallway = new Hallway(xlowl, ylowl, xupr, yupr);
         }
-        System.out.println("1: " + xlowl);
 
         // check if overlaps with other rooms
         for (Room troom : GridCreator.rooms) {
@@ -194,7 +187,6 @@ public class Hallway implements InteriorSpace{
                 dummyHallway = new Hallway(xlowl, ylowl, xupr, yupr);
             }
         }
-        System.out.println("2: " + xlowl);
 
         // check if overlaps with other hallways
         for (Hallway hallway : GridCreator.hallways) {
@@ -204,8 +196,6 @@ public class Hallway implements InteriorSpace{
                 dummyHallway = new Hallway(xlowl, ylowl, xupr, yupr);
             }
         }
-        System.out.println("1: " + xlowl);
-        System.out.println("door room: " + door.getXpos() + " len:" + length);
 
         if (this.xlowl < door.getXpos()) {
             // make door on the other sie

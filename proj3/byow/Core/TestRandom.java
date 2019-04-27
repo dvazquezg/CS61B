@@ -3,8 +3,6 @@ package byow.Core;
 import java.util.ArrayList;
 import java.util.Random;
 import static byow.Core.Constants.*;
-
-import edu.princeton.cs.algs4.StdIn;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

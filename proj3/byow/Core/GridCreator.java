@@ -2,29 +2,24 @@ package byow.Core;
 
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-
 import java.util.ArrayList;
 import java.util.Random;
-import static byow.Core.Constants.*;
 
 public class GridCreator {
 
     protected static int columns;     // The number of columns on the board (how wide it will be).
     protected static int rows;        // The number of rows on the board (how tall it will be).
-    protected int numRooms;    // The range of the number of rooms there can be.
-    protected static ArrayList<Room> rooms;          // List of rooms in this grid
+    protected int numRooms;           // The range of the number of rooms there can be.
+    protected static ArrayList<Room> rooms;   // List of rooms in this grid
     protected ArrayList<Room> availableRooms; // Dynamic list of room who have disconnected doors
     protected static ArrayList<Hallway> hallways;    // List of hallways in this grid
-    protected TETile[][] world;     // The world to be generated
+    protected TETile[][] world;   // The world to be generated
 
     public GridCreator(int columns, int rows, RandomGen rgen){
         this.columns = columns;
         this.rows = rows;
         this.numRooms = rgen.random(10, 15);
         this.world = new TETile[columns][rows];
-        System.out.println("rows: " + rows + ", cols: " + columns);
-        System.out.println("Rooms to generate: " + this.numRooms);
-        //setuptest(rgen);
         setup(rgen);
     }
 
@@ -61,17 +56,14 @@ public class GridCreator {
                 hallways.add(newHallway);
                 Room newRoom = new Room(newHallway, rgen);
                 if (newRoom.wasCreated()) {
-                    System.out.println("Created!!");
                     rooms.add(newRoom);
                     availableRooms.add(newRoom);
                 }
             }
             createRooms -= 1;
-            System.out.println("Size hallways:" + hallways.size());
             removeRoomsWithNoAvalDoors();
-
-            //break;
         }
+
         // add rooms to grid
         addRoomsToGrid();
         // add hallways to grid
@@ -134,15 +126,13 @@ public class GridCreator {
             for (int x = room.xlowl; x <= room.xupr; x += 1) {
                 for (int y = room.ylowl; y <= room.yupr; y += 1) {
                     if (x > room.xlowl && x < room.xupr && y > room.ylowl && y < room.yupr) {
-                        //y = room.yupr; // jump to upper row to avoid center
                         world[x][y] = Tileset.FLOOR;
                     } else {
                         world[x][y] = TETile.colorVariant(room.getWallTile(), 20, 20, 20, r);
-                        //Tile current = new Tile(x, y);
                     }
                 }
             }
-            System.out.println("printing: " + room);
+            //System.out.println("printing: " + room);
         }
     }
 
@@ -161,7 +151,6 @@ public class GridCreator {
                     world[x][y] = Tileset.FLOOR;
                 } else {
                     world[x][y] = TETile.colorVariant(Tileset.WALL, 20, 20, 20, r);
-                    //Tile current = new Tile(x, y);
                 }
             }
         }
@@ -188,7 +177,6 @@ public class GridCreator {
                 if (door.isConnected()) {
                     door.setTile(Tileset.FLOOR); // if connected the carve door
                 }
-                System.out.println(">>>>" + door);
                 world[door.getXpos()][door.getYpos()] = door.getTile();
             }
         }

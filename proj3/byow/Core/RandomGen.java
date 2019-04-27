@@ -14,7 +14,7 @@ public class RandomGen {
      * Initialize the random generator with the given seed
      * @param seed the seed from wich the number will be generated
      */
-    public RandomGen(int seed) {
+    public RandomGen(long seed) {
         this.RANDOM = new Random(seed);
     }
 

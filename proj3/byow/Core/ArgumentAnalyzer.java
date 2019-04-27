@@ -2,14 +2,13 @@ package byow.Core;
 
 import java.util.ArrayList;
 import static byow.Core.Constants.*;
-import static byow.Core.Utils.*;
 
 /**
  * Takes a string and analyses if it follows pattern for tile engine
  * @author Daniel Vazquez
  */
 public class ArgumentAnalyzer {
-    private int seed;
+    private long seed;
     private Action action;
     private ArrayList<Direction> steps;
     private boolean saveState = false;
@@ -59,7 +58,7 @@ public class ArgumentAnalyzer {
         return success;
     }
 
-    public int getSeed() {
+    public long getSeed() {
         return seed;
     }
 
@@ -108,7 +107,7 @@ public class ArgumentAnalyzer {
         }
         // check that seedStr is not empty
         if (!seedStr.equals("")) {
-            this.seed = Integer.parseInt(seedStr);
+            this.seed = Long.parseLong(seedStr);
             return true;
         }
         return false;

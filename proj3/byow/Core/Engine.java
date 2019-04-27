@@ -49,7 +49,7 @@ public class Engine {
 
         // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
         TERenderer ter = new TERenderer();
-        //ter.initialize(WIDTH, HEIGHT);
+        ter.initialize(WIDTH, HEIGHT);
 
         TETile[][] finalWorldFrame;
 
@@ -60,8 +60,8 @@ public class Engine {
         }
 
         RandomGen rgen= new RandomGen(analyzer.getSeed()); // random number generator
-        finalWorldFrame = new GridCreator(WIDTH, HEIGHT, rgen).grid(); // get full grid
-        //ter.renderFrame(finalWorldFrame); // draw the world to the screen
+        finalWorldFrame = new GridCreator(WIDTH, HEIGHT, rgen).grid(); // get world
+        ter.renderFrame(finalWorldFrame); // draw the world to the screen
 
         return finalWorldFrame;
     }
