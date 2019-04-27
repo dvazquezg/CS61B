@@ -189,4 +189,8 @@ public class TETile {
 
         return copy;
     }
+
+    public String toString() {
+        return String.valueOf(character);
+    }
 }

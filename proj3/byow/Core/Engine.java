@@ -4,7 +4,8 @@ import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 
 public class Engine {
-    TERenderer ter = new TERenderer();
+    private TERenderer ter = new TERenderer();
+    private TETile[][] finalWorldFrame;
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
@@ -41,8 +42,6 @@ public class Engine {
         // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
         //ter.initialize(WIDTH, HEIGHT);
 
-        TETile[][] finalWorldFrame;
-
         // check if given input is valid
         ArgumentAnalyzer analyzer = new ArgumentAnalyzer(input);
         if (!analyzer.success()) {
@@ -54,5 +53,20 @@ public class Engine {
         //ter.renderFrame(finalWorldFrame); // draw the world to the screen
 
         return finalWorldFrame;
+    }
+
+    public String toString() {
+        if (finalWorldFrame == null) {
+            return "The gird is empty";
+        }
+        String grid = "";
+        for (int i = finalWorldFrame[0].length - 1; i >= 0; i--) {
+            for (int j = 0; j < finalWorldFrame.length; j++) {
+                grid += finalWorldFrame[j][i].toString();
+            }
+            grid += "\n"; // new line
+        }
+
+        return grid;
     }
 }

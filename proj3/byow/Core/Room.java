@@ -33,9 +33,9 @@ public class Room implements InteriorSpace {
         doors = new ArrayList<>();
 
 
-        // lower left coordinate must be generated so that a room of min size can be placed
-        xlowl = rgen.random(0, columns - MIN_ROOM_SIDE - 1);
-        ylowl = rgen.random(0, rows - MIN_ROOM_SIDE - 1);
+        // lower left coordinate must be generated so that a room of max size can be placed
+        xlowl = rgen.random(0, columns - MAX_ROOM_SIDE - 1);
+        ylowl = rgen.random(0, rows - MAX_ROOM_SIDE - 1);
 
         // places initial room at the center
         //xlowl = (int) (columns / 2f - roomWidth / 2f); // W-36 E+36 || -29
@@ -316,7 +316,8 @@ public class Room implements InteriorSpace {
             ndoors = 4; // first room: must have 5 doors to increase randomness
         } else {
             // if a hallways in entering this, then we must add connecting door
-            ndoors = rgen.random(2, 4); // make sure has the entry and at least one exit
+            ndoors = 4;
+            //ndoors = rgen.random(3, 4); // make sure has the entry and at least one exit
             usedDirs.add(connectingDoor.getDir()); // add opposite of entering direction
             doors.add(connectingDoor);
             ndoors -= 1;
