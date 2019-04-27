@@ -1,20 +1,18 @@
 package byow.Core;
 
-import byow.Core.Constants.*;
 import byow.TileEngine.TETile;
-import byow.TileEngine.Tileset;
 import java.util.ArrayList;
 import static byow.Core.Constants.*;
 import static byow.Core.GridCreator.isOutOfBounds;
 import static byow.Core.GridCreator.overlaps;
 
-public class Hallway implements InteriorSpace{
-    protected int xlowl;                  // The x coordinate of the lower left tile of the hallway.
-    protected int ylowl;                  // The y coordinate of the lower left tile of the hallway.
-    protected int xupr;                   // The x coordinate of the upper right tile of the hallway.
-    protected int yupr;                   // The y coordinate of the upper right tile of the hallway.
-    protected int length;                 // The hallway's length
-    protected Direction dir;              // The hallways's direction
+public class Hallway implements InteriorSpace {
+    protected int xlowl;      // The x coordinate of the lower left tile of the hallway.
+    protected int ylowl;      // The y coordinate of the lower left tile of the hallway.
+    protected int xupr;       // The x coordinate of the upper right tile of the hallway.
+    protected int yupr;       // The y coordinate of the upper right tile of the hallway.
+    protected int length;     // The hallway's length
+    protected Direction dir;  // The hallways's direction
     protected ArrayList<Door> doors;      // The hallways's doors
     protected TETile wallTile = WALLTILE; // The hallways's wall tile
     protected TETile doorTile = DOORTILE; // The default door tile type
@@ -41,7 +39,7 @@ public class Hallway implements InteriorSpace{
     }
 
     private void makeHallway(Room room, RandomGen rgen) {
-        Door door = room.getRandomAvailableDoor(rgen);// get a random door from given room
+        Door door = room.getRandomAvailableDoor(rgen); // get a random door from given room
         this.dir = door.getDir();
         switch (dir) {
             case NORTH:
@@ -55,6 +53,8 @@ public class Hallway implements InteriorSpace{
                 break;
             case EAST:
                 eastHallway(door, room, rgen);
+                break;
+            default:
                 break;
         }
     }
@@ -94,10 +94,12 @@ public class Hallway implements InteriorSpace{
         // check if hallway ylowl is the same as door.ylowl (meaning is does not have space)
         if (this.yupr > door.getYpos()) {
             // make door on the other sie
-            Door newStartDoor = new Door(door.getXpos(), door.getYpos() + 1, doorTile, getOpositeDir(dir));
+            Door newStartDoor = new Door(door.getXpos(), door.getYpos() + 1,
+                    doorTile, getOpositeDir(dir));
             newStartDoor.connect(); // carve door from hallway
             door.connect(); // carve door from room
-            Door newEndDoor = new Door(door.getXpos() , door.getYpos() + length, doorTile, dir); // create door
+            Door newEndDoor = new Door(door.getXpos(), door.getYpos() + length,
+                    doorTile, dir); // create door
 
             // if the corridor is just of length 1, then star & end door are in same pos
             if (!newStartDoor.samePos(newEndDoor)) {
@@ -107,7 +109,7 @@ public class Hallway implements InteriorSpace{
             endDoor = newEndDoor;
             created = true;
         } else {
-            room.doors.remove(door);// remove northern door of this room
+            room.doors.remove(door); // remove northern door of this room
         }
 
     }
@@ -147,10 +149,12 @@ public class Hallway implements InteriorSpace{
         // check if hallway ylowl is the same as door.ylowl (meaning is does not have space)
         if (this.ylowl < door.getYpos()) {
             // make door on the other sie
-            Door newStartDoor = new Door(door.getXpos(), door.getYpos() - 1, doorTile, getOpositeDir(dir));
+            Door newStartDoor = new Door(door.getXpos(), door.getYpos() - 1,
+                    doorTile, getOpositeDir(dir));
             newStartDoor.connect(); // carve door from hallway
             door.connect(); // carve door from room
-            Door newEndDoor = new Door(door.getXpos() , door.getYpos() - length, doorTile, dir); // create door
+            Door newEndDoor = new Door(door.getXpos(), door.getYpos() - length,
+                    doorTile, dir); // create door
 
             // if the corridor is just of length 1, then star & end door are in same pos
             if (!newStartDoor.samePos(newEndDoor)) {
@@ -160,7 +164,7 @@ public class Hallway implements InteriorSpace{
             endDoor = newEndDoor;
             created = true;
         } else {
-            room.doors.remove(door);// remove northern door of this room
+            room.doors.remove(door); // remove northern door of this room
         }
 
     }
@@ -199,10 +203,12 @@ public class Hallway implements InteriorSpace{
 
         if (this.xlowl < door.getXpos()) {
             // make door on the other sie
-            Door newStartDoor = new Door(door.getXpos() - 1, door.getYpos(), doorTile, getOpositeDir(dir));
+            Door newStartDoor = new Door(door.getXpos() - 1, door.getYpos(),
+                    doorTile, getOpositeDir(dir));
             newStartDoor.connect(); // carve door from hallway
             door.connect(); // carve door from room
-            Door newEndDoor = new Door(door.getXpos() - length, door.getYpos(), doorTile, dir); // create door
+            Door newEndDoor = new Door(door.getXpos() - length, door.getYpos(),
+                    doorTile, dir); // create door
             if (!newStartDoor.samePos(newEndDoor)) {
                 this.doors.add(newStartDoor);
             }
@@ -210,7 +216,7 @@ public class Hallway implements InteriorSpace{
             endDoor = newEndDoor;
             created = true;
         } else {
-            room.doors.remove(door);// remove northern door of this room
+            room.doors.remove(door); // remove northern door of this room
         }
 
     }
@@ -249,10 +255,12 @@ public class Hallway implements InteriorSpace{
 
         if (this.xupr > door.getXpos()) {
             // make door on the other sie
-            Door newStartDoor = new Door(door.getXpos() + 1, door.getYpos(), doorTile, getOpositeDir(dir));
+            Door newStartDoor = new Door(door.getXpos() + 1, door.getYpos(),
+                    doorTile, getOpositeDir(dir));
             newStartDoor.connect(); // carve door from hallway
             door.connect(); // carve door from room
-            Door newEndDoor = new Door(door.getXpos() + length, door.getYpos(), doorTile, dir); // create door
+            Door newEndDoor = new Door(door.getXpos() + length, door.getYpos(),
+                    doorTile, dir); // create door
             if (!newStartDoor.samePos(newEndDoor)) {
                 this.doors.add(newStartDoor);
             }
@@ -260,13 +268,13 @@ public class Hallway implements InteriorSpace{
             endDoor = newEndDoor;
             created = true;
         } else {
-            room.doors.remove(door);// remove northern door of this room
+            room.doors.remove(door); // remove northern door of this room
         }
 
     }
 
-    private Direction getOpositeDir(Direction dir) {
-        switch (dir) {
+    private Direction getOpositeDir(Direction orgdir) {
+        switch (orgdir) {
             case NORTH:
                 return Direction.SOUTH;
             case WEST:
@@ -275,14 +283,16 @@ public class Hallway implements InteriorSpace{
                 return Direction.NORTH;
             case EAST:
                 return Direction.WEST;
+            default:
+                break;
         }
         return null;
     }
 
-    public String toString(){
+    public String toString() {
         String info = "Hallway length " + length + ", ";
-        info += "lower left: (" + xlowl + ", "+ ylowl + ") ";
-        info += "upper right: (" + xupr + ", "+ yupr + ")";
+        info += "lower left: (" + xlowl + ", " + ylowl + ") ";
+        info += "upper right: (" + xupr + ", " + yupr + ")";
         return info;
     }
 
@@ -306,7 +316,7 @@ public class Hallway implements InteriorSpace{
         return yupr;
     }
 
-    public boolean wasCreated(){
+    public boolean wasCreated() {
         return created;
     }
 

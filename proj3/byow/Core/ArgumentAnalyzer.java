@@ -16,7 +16,7 @@ public class ArgumentAnalyzer {
 
 
     public ArgumentAnalyzer(String argument) {
-        if (argument == null || argument.equals("")){
+        if (argument == null || argument.equals("")) {
             success = false;
             return;
         }
@@ -93,9 +93,9 @@ public class ArgumentAnalyzer {
      * @param tokenizer tokenizer (assumes string starts with number)
      * @return true if extraction was successful, false otherwise
      */
-    private boolean getSeed(StringInputDevice tokenizer){
+    private boolean getSeed(StringInputDevice tokenizer) {
         String seedStr = "";
-        while (tokenizer.possibleNextInput()){
+        while (tokenizer.possibleNextInput()) {
             char nextChar = tokenizer.getNextKey();
             if (Character.isDigit(nextChar)) {
                 seedStr += nextChar;
@@ -113,8 +113,8 @@ public class ArgumentAnalyzer {
         return false;
     }
 
-    private boolean getSteps(StringInputDevice tokenizer){
-        while (tokenizer.possibleNextInput()){
+    private boolean getSteps(StringInputDevice tokenizer) {
+        while (tokenizer.possibleNextInput()) {
             char nextChar = tokenizer.getNextKey();
             switch (nextChar) {
                 case 'W':

@@ -15,7 +15,7 @@ public class GridCreator {
     protected static ArrayList<Hallway> hallways;    // List of hallways in this grid
     protected TETile[][] world;   // The world to be generated
 
-    public GridCreator(int columns, int rows, RandomGen rgen){
+    public GridCreator(int columns, int rows, RandomGen rgen) {
         this.columns = columns;
         this.rows = rows;
         this.numRooms = rgen.random(10, 15);
@@ -46,12 +46,10 @@ public class GridCreator {
         availableRooms.add(firstRoom);
 
         // main loop, creates world
-        int createRooms = 30;
-        //while (rooms.size() < numRooms) {
         while (hasDisconnectedDoors()) {
             Room currentRoom = getRandRoomWithAvalDoors(rgen);
             Hallway newHallway = new Hallway(currentRoom, rgen);
-
+            // if hallway was created, try to create a room at the end
             if (newHallway.wasCreated()) {
                 hallways.add(newHallway);
                 Room newRoom = new Room(newHallway, rgen);
@@ -60,7 +58,6 @@ public class GridCreator {
                     availableRooms.add(newRoom);
                 }
             }
-            createRooms -= 1;
             removeRoomsWithNoAvalDoors();
         }
 
@@ -76,57 +73,21 @@ public class GridCreator {
         if (availableRooms.size() == 0) {
             return null;
         }
-        int ramdomIndex = rgen.random(0, availableRooms.size() -1);
+        int ramdomIndex = rgen.random(0, availableRooms.size() - 1);
         return availableRooms.get(ramdomIndex);
     }
 
-    private void removeRoomsWithNoAvalDoors(){
+    private void removeRoomsWithNoAvalDoors() {
         availableRooms.removeIf(room -> (!room.hasAvailableDoors()));
     }
 
-    public void setuptest(RandomGen rgen) {
-        initialize();
-
-        // Create the rooms array with a random size.
-        rooms = new ArrayList<>();
-
-        // There should be one less corridor than there is rooms.
-        hallways = new ArrayList<>();
-
-        Room testRoom1 = new Room(10, 10, 5, 5);
-        Room testRoom2 = new Room(6, 14, 5, 5);
-        Room testRoom3 = new Room(14, 6, 5, 5);
-        Room testRoom4 = new Room(6, 6, 5, 5);
-        Room testRoom5 = new Room(14, 14, 5, 5);
-        Room testRoom6 = new Room(20, 20, 5, 5);
-        Room testOutofBounds = new Room(0, 0, 80, 30);
-        System.out.println(testRoom1);
-        System.out.println(testRoom2);
-        System.out.println(testRoom3);
-        System.out.println(testRoom4);
-        System.out.println(testRoom5);
-        System.out.println(testRoom6);
-        //rooms.add(testOutofBounds);
-        rooms.add(testRoom1);
-        rooms.add(testRoom2);
-        rooms.add(testRoom3);
-        rooms.add(testRoom4);
-        rooms.add(testRoom5);
-        rooms.add(testRoom6);
-        System.out.println("Overlaps? " + overlaps(testRoom1, testRoom5));
-        System.out.println("Out of bounds? " + isOutOfBounds(testOutofBounds));
-
-        addRoomsToGrid();
-
-    }
-
-    private void addRoomsToGrid(){
+    private void addRoomsToGrid() {
         Random r = new Random();
         for (Room room : rooms) {
             for (int x = room.xlowl; x <= room.xupr; x += 1) {
                 for (int y = room.ylowl; y <= room.yupr; y += 1) {
                     if (x > room.xlowl && x < room.xupr && y > room.ylowl && y < room.yupr) {
-                        world[x][y] = Tileset.FLOOR;
+                        world[x][y] = Constants.FLOORTILE;
                     } else {
                         world[x][y] = TETile.colorVariant(room.getWallTile(), 20, 20, 20, r);
                     }
@@ -139,18 +100,15 @@ public class GridCreator {
     private void addHallwaysToGrid() {
         Random r = new Random();
         for (Hallway hallway : hallways) {
-            addHallway(hallway, r);
-        }
-    }
-
-    private void addHallway(Hallway hallway, Random r) {
-        for (int x = hallway.xlowl; x <= hallway.xupr; x += 1) {
-            for (int y = hallway.ylowl; y <= hallway.yupr; y += 1) {
-                if (x > hallway.xlowl && x < hallway.xupr && y > hallway.ylowl && y < hallway.yupr) {
-                    //y = hallway.yupr; // jump to upper row to avoid center
-                    world[x][y] = Tileset.FLOOR;
-                } else {
-                    world[x][y] = TETile.colorVariant(Tileset.WALL, 20, 20, 20, r);
+            for (int x = hallway.xlowl; x <= hallway.xupr; x += 1) {
+                for (int y = hallway.ylowl; y <= hallway.yupr; y += 1) {
+                    if (x > hallway.xlowl && x < hallway.xupr
+                            && y > hallway.ylowl && y < hallway.yupr) {
+                        //y = hallway.yupr; // jump to upper row to avoid center
+                        world[x][y] = Constants.FLOORTILE;
+                    } else {
+                        world[x][y] = TETile.colorVariant(hallway.getWallTile(), 20, 20, 20, r);
+                    }
                 }
             }
         }
@@ -158,33 +116,33 @@ public class GridCreator {
 
     private void addDoorsToGrid() {
         for (Room room : rooms) {
-            if(room.doors == null){
-                continue; //<<<<<<<< delete
+            if (room.doors == null) {
+                continue;
             }
             for (Door door : room.doors) {
                 if (door.isConnected()) {
-                    door.setTile(Tileset.FLOOR); // if connected then is carved show floor
+                    door.setTile(Constants.FLOORTILE); // if connected then is carved show floor
                 }
                 world[door.getXpos()][door.getYpos()] = door.getTile();
             }
         }
 
         for (Hallway hallway : hallways) {
-            if(hallway.doors == null){
-                continue; //<<<<<<<< delete
+            if (hallway.doors == null) {
+                continue;
             }
             for (Door door : hallway.doors) {
                 if (door.isConnected()) {
-                    door.setTile(Tileset.FLOOR); // if connected the carve door
+                    door.setTile(Constants.FLOORTILE); // if connected the carve door
                 }
                 world[door.getXpos()][door.getYpos()] = door.getTile();
             }
         }
     }
 
-    public boolean hasDisconnectedDoors(){
-        for(Room room : rooms) {
-            if(room.doors == null){
+    public boolean hasDisconnectedDoors() {
+        for (Room room : rooms) {
+            if (room.doors == null) {
                 continue;
             }
             for (Door door : room.doors) {
@@ -194,8 +152,8 @@ public class GridCreator {
             }
         }
 
-        for(Hallway hallway : hallways) {
-            if(hallway.doors == null){
+        for (Hallway hallway : hallways) {
+            if (hallway.doors == null) {
                 continue;
             }
             for (Door door : hallway.doors) {
@@ -207,7 +165,7 @@ public class GridCreator {
         return false;
     }
 
-    public static boolean overlaps(InteriorSpace space1, InteriorSpace space2){
+    public static boolean overlaps(InteriorSpace space1, InteriorSpace space2) {
         // Exclude parts where they do not overlap
         // If one rectangle is on left side of other
         if (space2.getxlowl() > space1.getxupr() || space1.getxlowl() > space2.getxupr()) {
@@ -220,7 +178,7 @@ public class GridCreator {
         return true;
     }
 
-    public static boolean isOutOfBounds(InteriorSpace target){
+    public static boolean isOutOfBounds(InteriorSpace target) {
         // check if given space is within boundaries of grid
         if (target.getxlowl() >= 0 && target.getxupr() < columns
             && target.getylowl() >= 0 && target.getyupr() < rows) {
@@ -246,7 +204,7 @@ public class GridCreator {
      * Return the grid
      * @return world grid
      */
-    public TETile[][] grid(){
+    public TETile[][] grid() {
         return world;
     }
 }

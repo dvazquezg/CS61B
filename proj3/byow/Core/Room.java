@@ -1,6 +1,5 @@
 package byow.Core;
 
-import byow.Core.Constants.*;
 import byow.TileEngine.TETile;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,19 +7,19 @@ import static byow.Core.Constants.*;
 import static byow.Core.GridCreator.isOutOfBounds;
 import static byow.Core.GridCreator.overlaps;
 
-public class Room implements InteriorSpace{
-    protected int xlowl;                      // The x coordinate of the lower left tile of the room.
-    protected int ylowl;                      // The y coordinate of the lower left tile of the room.
-    protected int xupr;                       // The x coordinate of the upper right tile of the room.
-    protected int yupr;                       // The y coordinate of the upper right tile of the room.
-    protected int roomWidth;                  // The room's width in tiles
-    protected int roomHeight;                 // The room's height in tiles
-    protected int xposd;                      // The x coordinate of connecting door to incoming hallway
-    protected int yposd;                      // The y coordinate of connecting door to incoming hallway
-    protected TETile wallTile = WALLTILE;     // The room's wall tile
-    protected TETile doorTile = DOORTILE;     // The default door tile type
-    protected ArrayList<Door> doors;          // Array of rooms
-    protected boolean created = false;        // Flag to indicate if room was created or not
+public class Room implements InteriorSpace {
+    protected int xlowl;      // The x coordinate of the lower left tile of the room.
+    protected int ylowl;      // The y coordinate of the lower left tile of the room.
+    protected int xupr;       // The x coordinate of the upper right tile of the room.
+    protected int yupr;       // The y coordinate of the upper right tile of the room.
+    protected int roomWidth;  // The room's width in tiles
+    protected int roomHeight; // The room's height in tiles
+    protected int xposd;      // The x coordinate of connecting door to incoming hallway
+    protected int yposd;      // The y coordinate of connecting door to incoming hallway
+    protected TETile wallTile = WALLTILE;  // The room's wall tile
+    protected TETile doorTile = DOORTILE;  // The default door tile type
+    protected ArrayList<Door> doors;       // Array of rooms
+    protected boolean created = false;     // Flag to indicate if room was created or not
 
     /**
      * Creates the first room of the world approximately in the center
@@ -32,12 +31,22 @@ public class Room implements InteriorSpace{
         this.roomWidth = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
         this.roomHeight = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
         doors = new ArrayList<>();
-        // place first room in the middle of the grid
-        xlowl = (int) (columns / 2f - roomWidth / 2f); // W-36 E+36 || -29
-        ylowl = (int) (rows / 2f - roomHeight / 2f);// N+12 S-10
+
+
+        // lower left coordinate must be generated so that a room of min size can be placed
+        xlowl = rgen.random(0, columns - MIN_ROOM_SIDE - 1);
+        ylowl = rgen.random(0, rows - MIN_ROOM_SIDE - 1);
+
+        // places initial room at the center
+        //xlowl = (int) (columns / 2f - roomWidth / 2f); // W-36 E+36 || -29
+        //ylowl = (int) (rows / 2f - roomHeight / 2f);// N+12 S-10
+
+        // calculate and set size of room
         xupr = xlowl + roomWidth - 1;
         yupr = ylowl + roomHeight - 1;
-        setDoors(rgen, null); // null since there is no entering hallway
+
+        // set doors (second arg is null since there is not hallway yet)
+        setDoors(rgen, null);
         created = true;
     }
 
@@ -51,7 +60,7 @@ public class Room implements InteriorSpace{
         makeRoom(incomingHallway, rgen);
     }
 
-    private void makeRoom(Hallway hallway, RandomGen rgen){
+    private void makeRoom(Hallway hallway, RandomGen rgen) {
         // set desire room size
         int desiredWidth = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
         int desiredHeight = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
@@ -61,7 +70,7 @@ public class Room implements InteriorSpace{
         setSmallestSize(connectingDoor);
 
         // try to reach desire size
-        while(!desiredSize(desiredWidth, desiredHeight)) {
+        while (!desiredSize(desiredWidth, desiredHeight)) {
             if (!increaseSizeByOne(desiredWidth, desiredHeight, connectingDoor, rgen)) {
                 break;
             }
@@ -81,7 +90,8 @@ public class Room implements InteriorSpace{
         }
     }
 
-    private boolean increaseSizeByOne(int desiredWidth, int desiredHeight, Door connectingDoor, RandomGen rgen) {
+    private boolean increaseSizeByOne(int desiredWidth, int desiredHeight,
+                                      Door connectingDoor, RandomGen rgen) {
         // increase size by one as long as room dims does not exceed target dims
         if (roomWidth < desiredWidth && increaseWidthByOne(connectingDoor, rgen)) {
             return true;
@@ -122,7 +132,7 @@ public class Room implements InteriorSpace{
             int randomSide = rgen.random(0, 1); // choose random side to begin with
             boolean extendWestward = (randomSide == 0);
             // loop two times
-            for(int attempt = 1; attempt <= 2; attempt++) {
+            for (int attempt = 1; attempt <= 2; attempt++) {
                 if (extendWestward) {
                     // extend westward
                     xupr += 1;
@@ -173,7 +183,7 @@ public class Room implements InteriorSpace{
             int randomSide = rgen.random(0, 1); // choose random side to begin with
             boolean extendNorthward = (randomSide == 0);
             // loop two times
-            for(int attempt = 1; attempt <= 2; attempt++) {
+            for (int attempt = 1; attempt <= 2; attempt++) {
                 if (extendNorthward) {
                     // extend northward
                     yupr += 1;
@@ -220,13 +230,13 @@ public class Room implements InteriorSpace{
         }
         // check if dummyRoom can fit among other existing rooms
         for (Room room : GridCreator.rooms) {
-            if (overlaps(dummyRoom, room)){
+            if (overlaps(dummyRoom, room)) {
                 return false;
             }
         }
         // check if dummyRoom can fit among other existing hallways
         for (Hallway hallway : GridCreator.hallways) {
-            if (overlaps(dummyRoom, hallway)){
+            if (overlaps(dummyRoom, hallway)) {
                 return false;
             }
         }
@@ -251,7 +261,7 @@ public class Room implements InteriorSpace{
             case WEST:
                 xupr += 1;
                 ylowl -= 1;
-                yupr +=1;
+                yupr += 1;
                 break;
             case SOUTH:
                 xlowl -= 1;
@@ -262,6 +272,8 @@ public class Room implements InteriorSpace{
                 xlowl -= 1;
                 ylowl -= 1;
                 yupr += 1;
+                break;
+            default:
                 break;
         }
 
@@ -290,16 +302,18 @@ public class Room implements InteriorSpace{
             case EAST:
                 xposd += 1;
                 break;
+            default:
+                break;
         }
         return new Door(xposd, yposd, doorTile, outDir);
     }
 
-    private void setDoors(RandomGen rgen, Door connectingDoor){
+    private void setDoors(RandomGen rgen, Door connectingDoor) {
         int ndoors;
         HashSet<Direction> usedDirs = new HashSet<>(); // hold used directions
         // check if entering door is provided
         if (connectingDoor == null) {
-            ndoors = rgen.random(1, 4); // first room: can be 1 or 4 doors
+            ndoors = 4; // first room: must have 5 doors to increase randomness
         } else {
             // if a hallways in entering this, then we must add connecting door
             ndoors = rgen.random(2, 4); // make sure has the entry and at least one exit
@@ -333,6 +347,8 @@ public class Room implements InteriorSpace{
                 return Direction.NORTH;
             case EAST:
                 return Direction.WEST;
+            default:
+                break;
         }
         return null;
     }
@@ -362,6 +378,8 @@ public class Room implements InteriorSpace{
                 ypos = rgen.random(ylowl + 1, yupr - 1); // x-pos on top room rim
                 xpos = xupr; // x-pos is left rim coordinate
                 break;
+            default:
+                break;
         }
         newDoor = new Door(xpos, ypos, doorTile, dir); // create door
         return newDoor;
@@ -384,10 +402,10 @@ public class Room implements InteriorSpace{
         yupr = ylowl + roomHeight - 1;
     }
 
-    public String toString(){
+    public String toString() {
         String info = "Room size " + roomWidth + "w x " + roomHeight + "h || ";
-        info += "lower left: (" + xlowl + ", "+ ylowl + ") ";
-        info += "upper right: (" + xupr + ", "+ yupr + ")";
+        info += "lower left: (" + xlowl + ", " + ylowl + ") ";
+        info += "upper right: (" + xupr + ", " + yupr + ")";
         return info;
     }
 
@@ -395,7 +413,7 @@ public class Room implements InteriorSpace{
      * Returns if the room has available doors
      * @return
      */
-    public boolean hasAvailableDoors(){
+    public boolean hasAvailableDoors() {
         for (Door door : doors) {
             if (!door.isConnected()) {
                 return true;
@@ -449,7 +467,7 @@ public class Room implements InteriorSpace{
         return roomHeight;
     }
 
-    public boolean wasCreated(){
+    public boolean wasCreated() {
         return created;
     }
 

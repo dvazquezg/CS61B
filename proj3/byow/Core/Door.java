@@ -1,6 +1,6 @@
 package byow.Core;
 
-import byow.Core.Constants.*;
+import byow.Core.Constants.Direction;
 import byow.TileEngine.TETile;
 
 public class Door implements Point {
@@ -33,7 +33,7 @@ public class Door implements Point {
         return this.dir;
     }
 
-    public void connect(){
+    public void connect() {
         this.connected = true;
     }
 
@@ -49,8 +49,8 @@ public class Door implements Point {
         this.tile = tile;
     }
 
-    public String toString(){
-        String info = "Position: (" + xpos + ", "+ ypos + ") ";
+    public String toString() {
+        String info = "Position: (" + xpos + ", " + ypos + ") ";
         info += "Connected?: " + connected + ", ";
         info += "Direction: " + dir + ", ";
         info += "Tile: " + tile;

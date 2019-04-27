@@ -1,19 +1,17 @@
 package byow.Core;
 
 import java.util.ArrayList;
-import java.util.Random;
 import static byow.Core.Constants.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TestRandom {
 
-    public static String[] myKSet = {"^[Nn]\\d+[Ss]",
-                                    "^[Nn]\\d+[sS][" + keySet1 + "]+",
-                                    "^[Nn]\\d+[sS][" + keySet1  + "]+[:][Qq].*",
-                                    "^[Ll][" + keySet1  + "]+",
-                                    "^[Ll][" + keySet1  + "]+[:][Qq].*"
-                                };
+    private static String[] myKSet = {"^[Nn]\\d+[Ss]",
+                                      "^[Nn]\\d+[sS][" + KEYSET1 + "]+",
+                                      "^[Nn]\\d+[sS][" + KEYSET1  + "]+[:][Qq].*",
+                                      "^[Ll][" + KEYSET1  + "]+",
+                                      "^[Ll][" + KEYSET1  + "]+[:][Qq].*"};
 
     @Test
     public void matchingTest() {
@@ -86,6 +84,43 @@ public class TestRandom {
             assertFalse(analyzer.success());
             System.out.println("Raw arg: " + str + "| valid?: " + analyzer.success());
         }
+    }
+
+    @Test
+    public void overLapOutOfBoundsTest() {
+
+        // Create the rooms array with a random size.
+        ArrayList<Room> rooms = new ArrayList<>();
+
+        Room testRoom1 = new Room(10, 10, 5, 5);
+        Room testRoom2 = new Room(6, 14, 5, 5);
+        Room testRoom3 = new Room(14, 6, 5, 5);
+        Room testRoom4 = new Room(6, 6, 5, 5);
+        Room testRoom5 = new Room(14, 14, 5, 5);
+        Room testRoom6 = new Room(20, 20, 5, 5);
+        Room testOutofBounds = new Room(0, 0, 80, 30);
+        System.out.println(testRoom1);
+        System.out.println(testRoom2);
+        System.out.println(testRoom3);
+        System.out.println(testRoom4);
+        System.out.println(testRoom5);
+        System.out.println(testRoom6);
+        //rooms.add(testOutofBounds);
+        rooms.add(testRoom1);
+        rooms.add(testRoom2);
+        rooms.add(testRoom3);
+        rooms.add(testRoom4);
+        rooms.add(testRoom5);
+        rooms.add(testRoom6);
+
+        boolean overlaps = GridCreator.overlaps(testRoom1, testRoom5);
+        boolean outOfBounds = GridCreator.isOutOfBounds(testOutofBounds);
+        System.out.println("Overlaps? " + overlaps);
+        System.out.println("Out of bounds? " + outOfBounds);
+
+        assertTrue(overlaps);
+        assertTrue(outOfBounds);
+
     }
 
 }
