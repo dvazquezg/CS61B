@@ -11,6 +11,7 @@ public class ArgumentAnalyzer {
     private long seed;
     private Action action;
     private ArrayList<Direction> steps;
+    private String strSteps;
     private boolean saveState = false;
     private boolean success = false;
 
@@ -81,19 +82,24 @@ public class ArgumentAnalyzer {
     }
 
     private boolean getSteps(StringInputDevice tokenizer) {
+        strSteps = "";
         while (tokenizer.possibleNextInput()) {
             char nextChar = tokenizer.getNextKey();
             switch (nextChar) {
                 case 'W':
+                    strSteps += 'W';
                     steps.add(Direction.NORTH);
                     break;
                 case 'A':
+                    strSteps += 'A';
                     steps.add(Direction.WEST);
                     break;
                 case 'S':
+                    strSteps += 'S';
                     steps.add(Direction.SOUTH);
                     break;
                 case 'D':
+                    strSteps += 'D';
                     steps.add(Direction.EAST);
                     break;
                 case ':':
@@ -141,6 +147,10 @@ public class ArgumentAnalyzer {
 
     public ArrayList<Direction> getSteps() {
         return steps;
+    }
+
+    public String getStrSteps() {
+        return strSteps;
     }
 
     private boolean newGameArgs(StringInputDevice tokenizer) {

@@ -7,9 +7,10 @@ import byow.TileEngine.Tileset;
  * System constants
  */
 public class Constants {
+    /////////// GRID GENERATION ///////////
     public enum Direction { NORTH, WEST, SOUTH, EAST }
     public enum Action { NEW, LOAD }
-    public static final String KEYSET1 = "WASDwasd";
+    public static final String KEYSET1 = "WASDwasd"; // not used in game (experimental)
     public static final int MIN_ROOM_SIDE = 4; // min can be 4
     public static final int MAX_ROOM_SIDE =  8;
     public static final TETile DOORTILE = Tileset.SAND;
@@ -19,4 +20,7 @@ public class Constants {
     public static final int MAX_HALLWAY_LEN = 6;
     public static final int MIN_DOORS_PER_ROOM = 4; // min 1
     public static final int MAX_DOOR_PER_ROOM = 4; // max 4
+    /////////// GAME DYNAMICS ///////////
+    public static final int INIT_LIVES = 3;
+    public static final TETile AVATARTILE = Tileset.AVATAR;
 }

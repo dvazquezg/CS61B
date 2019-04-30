@@ -14,12 +14,14 @@ public class GridCreator {
     protected ArrayList<Room> availableRooms; // Dynamic list of room who have disconnected doors
     protected static ArrayList<Hallway> hallways;    // List of hallways in this grid
     protected TETile[][] world;   // The world grid to be generated
+    protected RandomGen rgenGame; // The random gen (used for method-related game dynamics)
 
     public GridCreator(int columns, int rows, RandomGen rgen) {
         this.columns = columns;
         this.rows = rows;
         this.numRooms = rgen.random(10, 15);// not used
         this.world = new TETile[columns][rows];
+        this.rgenGame = rgen;
         setup(rgen);
     }
 
@@ -212,5 +214,27 @@ public class GridCreator {
      */
     public TETile[][] grid() {
         return world;
+    }
+
+    /**
+     * Returns an available floor position
+     * @return an available point
+     */
+    public SimplePoint getRandAvaFloorLoc() {
+        if (rooms.size() == 0) {
+            return null;
+        }
+        int xloc = 0;
+        int yloc = 0;
+        TETile currentTile = Tileset.NOTHING;
+        while (currentTile != Tileset.FLOOR) {
+            int ramdomIndex = rgenGame.random(0, rooms.size() - 1);
+            Room room = rooms.get(ramdomIndex);
+            xloc = rgenGame.random(room.xlowl + 1, room.xupr - 1); // x-coor between walls
+            yloc = rgenGame.random(room.ylowl + 1, room.yupr - 1); // y-coor between walls
+            currentTile = world[xloc][yloc];
+        }
+
+        return new SimplePoint(xloc, yloc);
     }
 }

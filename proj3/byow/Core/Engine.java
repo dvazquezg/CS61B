@@ -24,7 +24,7 @@ public class Engine {
             game.play();
             finalWorldFrame = game.getWorld();
             ter.renderFrame(finalWorldFrame); // draw the world to the screen
-            break;
+            //break;
         }
     }
 

@@ -29,6 +29,16 @@ public class Door implements Point {
         return this.ypos;
     }
 
+    @Override
+    public void setX(int x) {
+
+    }
+
+    @Override
+    public void setY(int y) {
+
+    }
+
     public Direction getDir() {
         return this.dir;
     }

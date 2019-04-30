@@ -4,8 +4,13 @@ import byow.TileEngine.TETile;
 import edu.princeton.cs.introcs.StdDraw;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.HashSet;
+
+import static byow.Core.Constants.Direction;
 
 public class Game {
+    private GridCreator worldGen;
     private TETile[][] world;
     private boolean gameOver = false;
     private int width;
@@ -15,8 +20,14 @@ public class Game {
     private boolean darker = true;
     private String gameSequence;
     private ArgumentAnalyzer analyzer;
+    private Avatar player;
+    private HashSet<Creature> creatures;
+    private ArrayList<Direction> trace; // records players movements
+
 
     public Game(int w, int h) {
+        creatures = new HashSet<>();
+        trace = new ArrayList<>();
         this.width = w;
         this.height = h;
         StdDraw.clear(new Color(0, 0, 0));
@@ -28,7 +39,7 @@ public class Game {
         boolean invalidOption = false;
         Character option;
         while (true) {
-            mainMenu(invalidOption);
+            mainMenu(invalidOption); // display menu
             if (StdDraw.hasNextKeyTyped()) {
                 option = StdDraw.nextKeyTyped();
                 option = Character.toUpperCase(option);
@@ -64,7 +75,7 @@ public class Game {
             StdDraw.clear(Color.BLACK);
             StdDraw.setPenColor(Color.WHITE);
             StdDraw.text(x, y + 1.5, "Enter seed number followed by letter 'S':");
-
+            // print flashing prompt
             if (decrease) {
                 flashUnderscore--;
                 StdDraw.text(x, y, gameSequence + "_");
@@ -80,15 +91,17 @@ public class Game {
             }
             StdDraw.show();
 
+            // retrieves user input
             if (StdDraw.hasNextKeyTyped()) {
                 char car = StdDraw.nextKeyTyped();
                 car = Character.toUpperCase(car);
                 gameSequence += car;
                 if (car == 'S') {
+                    // analyze input
                     analyzer = new ArgumentAnalyzer(gameSequence);
                     if (analyzer != null && analyzer.success()) {
                         initialWorld(analyzer.getSeed()); // set the grid
-
+                        createMainPlayer(); // positions main player's avatar
                         break;// break loop and return to start() loop
                     } else {
                         gameSequence = "N";
@@ -96,6 +109,16 @@ public class Game {
                 }
             }
         }
+    }
+    private void createMainPlayer() {
+        SimplePoint playerLoc = worldGen.getRandAvaFloorLoc(); // get available location
+        player = new Avatar(playerLoc, "You"); // create player
+        placeCreatureOnWorld(player);// place main player in grid
+    }
+
+    private void placeCreatureOnWorld(Creature creature) {
+        creatures.add(creature); // add to array of creatures
+        world[creature.getX()][creature.getY()] = creature.getTile(); // add to grid
     }
 
     private void loadGame() {
@@ -131,29 +154,106 @@ public class Game {
             StdDraw.text(x, y, "Invalid Option, try again!");
         }
         StdDraw.show();
-        //StdDraw.pause(2000);
-        //initialWorld(122343);
     }
 
     public void play() {
-        ArgumentAnalyzer analyzer = new ArgumentAnalyzer("n5197880843569031643s");
-        if (!analyzer.success()) {
-            // Show error message
+        boolean newMove = listenKeyboard();
+        //System.out.println("Current sequence: " + gameSequence);
+        //System.out.println(trace);
+        movePlayer(newMove);
+        newMove = false; // reset
+    }
+
+    public void movePlayer(boolean move) {
+        if (trace.size() == 0 || !move){
+            return;
+        }
+        Direction currentMove = trace.get(trace.size() - 1); // get last move
+        //StdDraw.pause(500);
+
+        if(!moveCreature(player, currentMove)){
+            // remove last move from trace and string
+            trace.remove(trace.size() - 1);
+            gameSequence = gameSequence.substring(0, gameSequence.length() - 1);
         }
     }
 
-    public void getSeed() {
-        ArgumentAnalyzer analyzer = new ArgumentAnalyzer("n5197880843569031643s");
-        if (!analyzer.success()) {
-            // Show error message
+    private boolean validCreatureMove(SimplePoint newPosition) {
+        TETile destination = world[newPosition.getXpos()][newPosition.getYpos()];
+        if (!destination.equals(Constants.FLOORTILE)){
+            return false;
         }
+        return true;
+    }
+
+    private boolean moveCreature(Creature creature, Direction dir) {
+        SimplePoint oldLocation = new SimplePoint(creature.getX(), creature.getY());
+        creatures.remove(creature);
+        switch (dir) {
+            case NORTH:
+                creature.moveNorth();
+                break;
+            case WEST:
+                creature.moveWest();
+                break;
+            case SOUTH:
+                creature.moveSouth();
+                break;
+            case EAST:
+                creature.moveEast();
+                break;
+            default:
+                break;
+        }
+
+        if (!validCreatureMove(creature.getLocation())) {
+            creature.setLocation(oldLocation);
+            creatures.add(creature);
+            return false;
+        }
+
+        creatures.add(creature); // add updated creature
+        world[oldLocation.getXpos()][oldLocation.getYpos()] = Constants.FLOORTILE;
+        world[creature.getX()][creature.getY()] = creature.getTile();
+        return true; // creature was moved
+    }
+
+    private boolean listenKeyboard() {
+        if (StdDraw.hasNextKeyTyped()) {
+            char key = StdDraw.nextKeyTyped();
+            key = Character.toUpperCase(key);
+            switch (key) {
+                case 'W':
+                    gameSequence += 'W';
+                    trace.add(Direction.NORTH);
+                    return true;
+                case 'A':
+                    gameSequence += 'A';
+                    trace.add(Direction.WEST);
+                    return true;
+                case 'S':
+                    gameSequence += 'S';
+                    trace.add(Direction.SOUTH);
+                    return true;
+                case 'D':
+                    gameSequence += 'D';
+                    trace.add(Direction.EAST);
+                    return true;
+                case ':':
+                    return false;
+                default:
+                    return false;
+            }
+        }
+        return false;
     }
 
 
 
     public void initialWorld(long seed) {
         RandomGen rgen = new RandomGen(seed); // random number generator
-        world = new GridCreator(width, height, rgen).grid(); // get world grid
+        worldGen = new GridCreator(width, height, rgen); // get world grid
+        world = worldGen.grid();
     }
 
     private void setTitleColor() {
