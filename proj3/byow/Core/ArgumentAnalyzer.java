@@ -54,39 +54,6 @@ public class ArgumentAnalyzer {
         }
     }
 
-    public boolean success() {
-        return success;
-    }
-
-    public long getSeed() {
-        return seed;
-    }
-
-    public boolean saveState() {
-        return saveState;
-    }
-
-    public boolean hasSteps() {
-        return steps.size() > 0;
-    }
-
-    public Action getAction() {
-        return action;
-    }
-
-    public ArrayList<Direction> getSteps() {
-        return steps;
-    }
-
-
-    private boolean newGameArgs(StringInputDevice tokenizer) {
-        return getSeed(tokenizer) && getSteps(tokenizer);
-    }
-
-    private boolean loadGameArgs(StringInputDevice tokenizer) {
-        return getSteps(tokenizer);
-    }
-
 
     /**
      * Gets a sequence of digits until next non-digit character is found
@@ -150,5 +117,37 @@ public class ArgumentAnalyzer {
             }
         }
         return false;
+    }
+
+    public boolean success() {
+        return success;
+    }
+
+    public long getSeed() {
+        return seed;
+    }
+
+    public boolean saveState() {
+        return saveState;
+    }
+
+    public boolean hasSteps() {
+        return steps.size() > 0;
+    }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public ArrayList<Direction> getSteps() {
+        return steps;
+    }
+
+    private boolean newGameArgs(StringInputDevice tokenizer) {
+        return getSeed(tokenizer) && getSteps(tokenizer);
+    }
+
+    private boolean loadGameArgs(StringInputDevice tokenizer) {
+        return getSteps(tokenizer);
     }
 }

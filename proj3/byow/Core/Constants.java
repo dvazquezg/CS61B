@@ -17,4 +17,6 @@ public class Constants {
     public static final TETile FLOORTILE = Tileset.FLOOR;
     public static final int MIN_HALLWAY_LEN = 2; // min can be 2
     public static final int MAX_HALLWAY_LEN = 6;
+    public static final int MIN_DOORS_PER_ROOM = 4; // min 1
+    public static final int MAX_DOOR_PER_ROOM = 4; // max 4
 }

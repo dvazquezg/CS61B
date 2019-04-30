@@ -12,6 +12,16 @@ public class TestRandom {
                                       "^[Nn]\\d+[sS][" + KEYSET1  + "]+[:][Qq].*",
                                       "^[Ll][" + KEYSET1  + "]+",
                                       "^[Ll][" + KEYSET1  + "]+[:][Qq].*"};
+    @Test
+    public void optionTest() {
+        String testStr1 = "N";
+        String testStr2 = "l";
+        String testStr3 = "q";
+
+        System.out.println("Matches: " + testStr1.matches("^[NnLlQq]"));
+        System.out.println("Matches: " + testStr2.matches("^[NnLlQq]"));
+        System.out.println("Matches: " + testStr3.matches("^[NnLlQq]"));
+    }
 
     @Test
     public void matchingTest() {

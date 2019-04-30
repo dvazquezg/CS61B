@@ -13,12 +13,12 @@ public class GridCreator {
     protected static ArrayList<Room> rooms;   // List of rooms in this grid
     protected ArrayList<Room> availableRooms; // Dynamic list of room who have disconnected doors
     protected static ArrayList<Hallway> hallways;    // List of hallways in this grid
-    protected TETile[][] world;   // The world to be generated
+    protected TETile[][] world;   // The world grid to be generated
 
     public GridCreator(int columns, int rows, RandomGen rgen) {
         this.columns = columns;
         this.rows = rows;
-        this.numRooms = rgen.random(10, 15);
+        this.numRooms = rgen.random(10, 15);// not used
         this.world = new TETile[columns][rows];
         setup(rgen);
     }
@@ -26,11 +26,11 @@ public class GridCreator {
     public void setup(RandomGen rgen) {
         initialize(); // fill grid with empty tiles
 
-        // Create the rooms array with a random size.
-        rooms = new ArrayList<>();
-        availableRooms = new ArrayList<>();
+        // Create the rooms arrayLists
+        rooms = new ArrayList<>(); // rooms added to grid
+        availableRooms = new ArrayList<>(); // list of rooms with disconnected doors
 
-        // There should be one less corridor than there is rooms.
+        // Create the hallways arrayList
         hallways = new ArrayList<>();
 
         /////////////// COLLISION TEST
@@ -40,24 +40,30 @@ public class GridCreator {
         //rooms.add(trickyRoom2);
         ///////////// END TEST
 
-        // create first room
+        // create first room (there is no hallway to connect with yet)
         Room firstRoom = new Room(columns, rows, rgen);
         rooms.add(firstRoom);
         availableRooms.add(firstRoom);
 
-        // main loop, creates world
-        while (hasDisconnectedDoors()) {
+        // main loop, creates rooms (and hallways) all room doors are connected
+        while (roomsHaveDisconnectedDoors()) {
+            // get a room from availableRooms which has disconnected doors
             Room currentRoom = getRandRoomWithAvalDoors(rgen);
+            // create hallway extending from current room
             Hallway newHallway = new Hallway(currentRoom, rgen);
             // if hallway was created, try to create a room at the end
             if (newHallway.wasCreated()) {
                 hallways.add(newHallway);
+                // create a room extending from new hallway
                 Room newRoom = new Room(newHallway, rgen);
+                // if room was created, the add it to both room lists
                 if (newRoom.wasCreated()) {
                     rooms.add(newRoom);
                     availableRooms.add(newRoom);
                 }
             }
+            // Each Room instance handles addition/removal of its doors based on space availability
+            // so we need to remove rooms from availableRooms that have no available doors.
             removeRoomsWithNoAvalDoors();
         }
 
@@ -140,7 +146,7 @@ public class GridCreator {
         }
     }
 
-    public boolean hasDisconnectedDoors() {
+    public boolean roomsHaveDisconnectedDoors() {
         for (Room room : rooms) {
             if (room.doors == null) {
                 continue;

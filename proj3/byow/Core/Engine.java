@@ -15,6 +15,17 @@ public class Engine {
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
+        // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
+        ter.initialize(WIDTH, HEIGHT); //render
+        Game game = new Game(WIDTH, HEIGHT);
+        game.start(); // displays main menu
+        //finalWorldFrame = game.getWorld();
+        while (!game.over()) {
+            game.play();
+            finalWorldFrame = game.getWorld();
+            ter.renderFrame(finalWorldFrame); // draw the world to the screen
+            break;
+        }
     }
 
     /**
@@ -40,7 +51,7 @@ public class Engine {
      */
     public TETile[][] interactWithInputString(String input) {
         // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
-        //ter.initialize(WIDTH, HEIGHT);
+        ter.initialize(WIDTH, HEIGHT);
 
         // check if given input is valid
         ArgumentAnalyzer analyzer = new ArgumentAnalyzer(input);
@@ -50,7 +61,7 @@ public class Engine {
 
         RandomGen rgen = new RandomGen(analyzer.getSeed()); // random number generator
         finalWorldFrame = new GridCreator(WIDTH, HEIGHT, rgen).grid(); // get world
-        //ter.renderFrame(finalWorldFrame); // draw the world to the screen
+        ter.renderFrame(finalWorldFrame); // draw the world to the screen
 
         return finalWorldFrame;
     }

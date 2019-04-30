@@ -32,7 +32,6 @@ public class Room implements InteriorSpace {
         this.roomHeight = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
         doors = new ArrayList<>();
 
-
         // lower left coordinate must be generated so that a room of max size can be placed
         xlowl = rgen.random(0, columns - MAX_ROOM_SIDE - 1);
         ylowl = rgen.random(0, rows - MAX_ROOM_SIDE - 1);
@@ -61,22 +60,22 @@ public class Room implements InteriorSpace {
     }
 
     private void makeRoom(Hallway hallway, RandomGen rgen) {
-        // set desire room size
+        // set desire room size (this algorithm will attempt to reach it)
         int desiredWidth = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
         int desiredHeight = rgen.random(MIN_ROOM_SIDE, MAX_ROOM_SIDE);
         Door connectingDoor = makeEnteringDoor(hallway);
 
-        // make dummy room of the smallest size possible & init dim instance variables
+        // set smallest size possible & init dim for this room
         setSmallestSize(connectingDoor);
 
         // try to reach desire size
         while (!desiredSize(desiredWidth, desiredHeight)) {
             if (!increaseSizeByOne(desiredWidth, desiredHeight, connectingDoor, rgen)) {
-                break;
+                break; // if room cannot be increased anymore, break loop
             }
         }
 
-        // check if resulting room size is valid
+        // check if resulting room size is of valid size, if so create it.
         if (validRoomSize()) {
             // create doors for this room
             setDoors(rgen, connectingDoor);
@@ -105,10 +104,8 @@ public class Room implements InteriorSpace {
     private boolean increaseWidthByOne(Door connectingDoor, RandomGen rgen) {
         // back up current size and corner coordinates
         SizeBackup bestSize = new SizeBackup(xlowl, ylowl, xupr, yupr, roomWidth, roomHeight);
-        //boolean resized = false;
         Direction doorDir = connectingDoor.getDir();
         // increase width according new room's door placement
-
         if (doorDir == Direction.WEST) {
             // if connecting door faces West, extend eastward
             xupr += 1;
@@ -129,9 +126,9 @@ public class Room implements InteriorSpace {
             return true; // room was resized successfully
         } else {
             // if connecting door faces North/South
-            int randomSide = rgen.random(0, 1); // choose random side to begin with
+            int randomSide = rgen.random(0, 1); // choose random side (E or W) to begin with
             boolean extendWestward = (randomSide == 0);
-            // loop two times
+            // loop two times (once to try to extend Westward and one to try to extend Eastward)
             for (int attempt = 1; attempt <= 2; attempt++) {
                 if (extendWestward) {
                     // extend westward
@@ -147,6 +144,7 @@ public class Room implements InteriorSpace {
                 if (roomFits(this)) {
                     return true;
                 }
+                // if new dims does not fit, restore previously best size
                 restoreBestSize(bestSize);
             }
             return false;
@@ -245,7 +243,7 @@ public class Room implements InteriorSpace {
 
     private void setSmallestSize(Door cdoor) {
         Direction outDir = cdoor.getDir();
-        // set starting corner positions
+        // set starting corner positions from end of incoming hallway's door
         xlowl = cdoor.getXpos();
         xupr = cdoor.getXpos();
         ylowl = cdoor.getYpos();
@@ -282,6 +280,11 @@ public class Room implements InteriorSpace {
         roomHeight = yupr - ylowl + 1;
     }
 
+    /**
+     * Makes door of new room that connects to door of incoming hallway
+     * @param hallway
+     * @return
+     */
     private Door makeEnteringDoor(Hallway hallway) {
         Direction inDir = hallway.getEndDoor().getDir();
         Direction outDir = getOpositeDir(inDir);
@@ -313,23 +316,23 @@ public class Room implements InteriorSpace {
         HashSet<Direction> usedDirs = new HashSet<>(); // hold used directions
         // check if entering door is provided
         if (connectingDoor == null) {
-            ndoors = 4; // first room: must have 5 doors to increase randomness
+            ndoors = MAX_DOOR_PER_ROOM; // allow max doors to get better randomness
         } else {
             // if a hallways in entering this, then we must add connecting door
-            ndoors = 4;
-            //ndoors = rgen.random(3, 4); // make sure has the entry and at least one exit
+            // make sure has the entry and at least one exit
+            ndoors = rgen.random(MIN_DOORS_PER_ROOM, MAX_DOOR_PER_ROOM);
             usedDirs.add(connectingDoor.getDir()); // add opposite of entering direction
             doors.add(connectingDoor);
             ndoors -= 1;
         }
 
-        int indexDir = rgen.random(0, 3); // random starting index
+        int indexDir = rgen.random(0, 3); // random starting index to pick door's location
         // create ndoors
         while (ndoors != 0) {
             // loop until get a random unused direction is found
             Direction currDir = Constants.Direction.values()[indexDir];
-            if (!usedDirs.contains(currDir)) {
-                Door newDoor = makeDoor(currDir, rgen);
+            if (!usedDirs.contains(currDir)) { // check if picked direction is used already
+                Door newDoor = makeDoor(currDir, rgen); // create a door in this room's direction
                 doors.add(newDoor);
                 usedDirs.add(currDir); // add direction to temp usedDirs
                 ndoors -= 1;
