@@ -15,7 +15,7 @@ public interface Creature {
     String getDescription();
     SimplePoint getLocation();
     void setPos(SimplePoint location);
-    void setName(String Name);
+    void setName(String name);
     void setDescription(String description);
     void setTile(TETile tile);
     void kill();

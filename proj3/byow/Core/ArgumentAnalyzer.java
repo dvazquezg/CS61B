@@ -12,11 +12,15 @@ public class ArgumentAnalyzer {
     private Action action;
     private ArrayList<Direction> steps;
     private String strSteps;
+    private String rawInput;
     private boolean saveState = false;
     private boolean success = false;
+    private int index;
 
 
     public ArgumentAnalyzer(String argument) {
+        rawInput = argument;
+        index = 0;
         if (argument == null || argument.equals("")) {
             success = false;
             return;
@@ -159,5 +163,20 @@ public class ArgumentAnalyzer {
 
     private boolean loadGameArgs(StringInputDevice tokenizer) {
         return getSteps(tokenizer);
+    }
+
+    public boolean hasNextStep() {
+        return index < strSteps.length();
+    }
+
+    public Step getNextStep() {
+        char returnChar = strSteps.charAt(index);
+        Direction returnDir = steps.get(index);
+        index += 1;
+        return new Step(returnChar, returnDir);
+    }
+
+    public String getRawInput() {
+        return rawInput;
     }
 }

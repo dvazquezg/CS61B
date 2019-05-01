@@ -4,10 +4,11 @@ import byow.TileEngine.TETile;
 import edu.princeton.cs.introcs.StdDraw;
 import java.awt.Color;
 import java.awt.Font;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
-
 import static byow.Core.Constants.Direction;
+import static byow.Core.Constants.Action;
 
 public class Game {
     private GridCreator worldGen;
@@ -18,11 +19,14 @@ public class Game {
     private Color titleColor = new Color(153, 223, 205);
     private Color dynamicColor = titleColor;
     private boolean darker = true;
+    private boolean commandMode = false;
     private String gameSequence;
     private ArgumentAnalyzer analyzer;
     private Avatar player;
     private HashSet<Creature> creatures;
     private ArrayList<Direction> trace; // records players movements
+    private String saveFile = "game.txt";
+    private boolean animatedReload = false;
 
 
     public Game(int w, int h) {
@@ -30,8 +34,6 @@ public class Game {
         trace = new ArrayList<>();
         this.width = w;
         this.height = h;
-        StdDraw.clear(new Color(0, 0, 0));
-        StdDraw.show();
     }
 
     public void start() {
@@ -71,7 +73,7 @@ public class Game {
         // loop until a valid input is entered
         int flashUnderscore = 100;
         boolean decrease = true;
-        while(true){
+        while (true) {
             StdDraw.clear(Color.BLACK);
             StdDraw.setPenColor(Color.WHITE);
             StdDraw.text(x, y + 1.5, "Enter seed number followed by letter 'S':");
@@ -79,13 +81,13 @@ public class Game {
             if (decrease) {
                 flashUnderscore--;
                 StdDraw.text(x, y, gameSequence + "_");
-                if (flashUnderscore == 0){
+                if (flashUnderscore == 0) {
                     decrease = false;
                 }
             } else {
                 flashUnderscore++;
                 StdDraw.text(x, y, gameSequence + " ");
-                if (flashUnderscore == 100){
+                if (flashUnderscore == 100) {
                     decrease = true;
                 }
             }
@@ -102,9 +104,9 @@ public class Game {
                     if (analyzer != null && analyzer.success()) {
                         initialWorld(analyzer.getSeed()); // set the grid
                         createMainPlayer(); // positions main player's avatar
-                        break;// break loop and return to start() loop
+                        break; // break loop and return to start() loop
                     } else {
-                        gameSequence = "N";
+                        gameSequence = "N"; // reset if sequence is invalid
                     }
                 }
             }
@@ -113,16 +115,12 @@ public class Game {
     private void createMainPlayer() {
         SimplePoint playerLoc = worldGen.getRandAvaFloorLoc(); // get available location
         player = new Avatar(playerLoc, "You"); // create player
-        placeCreatureOnWorld(player);// place main player in grid
+        placeCreatureOnWorld(player); // place main player in grid
     }
 
     private void placeCreatureOnWorld(Creature creature) {
         creatures.add(creature); // add to array of creatures
         world[creature.getX()][creature.getY()] = creature.getTile(); // add to grid
-    }
-
-    private void loadGame() {
-
     }
 
     private void mainMenu(boolean invalidOption) {
@@ -157,21 +155,128 @@ public class Game {
     }
 
     public void play() {
-        boolean newMove = listenKeyboard();
+        boolean newMove = moveListener();
         //System.out.println("Current sequence: " + gameSequence);
         //System.out.println(trace);
-        movePlayer(newMove);
-        newMove = false; // reset
+        if (commandMode) {
+            commandListener();
+        } else {
+            movePlayer(newMove);
+        }
+    }
+
+    private void commandListener() {
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char key = StdDraw.nextKeyTyped();
+                key = Character.toUpperCase(key);
+                switch (key) {
+                    case 'Q':
+                        saveGame();
+                        return;
+                    default:
+                        commandMode = false;
+                        return;
+                }
+            }
+        }
+    }
+
+    private void saveGame() {
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(saveFile));
+            out.write(gameSequence); // game sequence
+            out.close();
+        } catch (IOException e) {
+            System.out.println("Game was not saved!");
+        }
+        gameOver = true; // end the game (stops main loop if running)
+    }
+
+    private void loadGame() {
+        String savedGameSequence = readFile();
+        if (savedGameSequence != null) {
+            restoreState(savedGameSequence);
+        } else {
+            gameOver = true;
+            System.out.println("File is empty!");
+        }
+    }
+
+    private String readFile() {
+        String str = null;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(saveFile));
+            str = reader.readLine();
+            reader.close();
+        } catch (IOException e) {
+            System.out.println("File does not exist!");
+            gameOver = true;
+        }
+        return str;
+    }
+
+    private void restoreState(String sequence) {
+        analyzer = new ArgumentAnalyzer(sequence); // takes string sequence and analyzes it
+        if (!analyzer.success()) {
+            gameOver = true;
+            System.out.println("Invalid or corrupted sequence");
+            return;
+        }
+
+        if (analyzer.getAction() == Action.NEW) {
+            // initialize game Sequence
+            gameSequence = "N" + analyzer.getSeed() + "S";
+            // initialize world
+            initialWorld(analyzer.getSeed()); // set the grid
+            createMainPlayer(); // positions main player's avatar
+        }
+
+        if (analyzer.hasSteps() && !animatedReload) {
+            directStateRecovery(); // recovers state
+        }
+
+        // if loaded sequence contains save command, save
+        if (analyzer.saveState()) {
+            saveGame();
+        }
+    }
+
+    /**
+     * executes string command
+     * @param input
+     */
+    public void executeArgument(ArgumentAnalyzer input) {
+        if (input.getAction() == Action.LOAD) {
+            System.out.println("Loading...");
+            loadGame();
+        }
+        restoreState(input.getRawInput());
+    }
+
+    private void directStateRecovery() {
+        while (analyzer.hasNextStep()) {
+            replay();
+        }
+    }
+
+    public void replay() {
+        Step currentStep = analyzer.getNextStep();
+        gameSequence += currentStep.getCharStep();
+        trace.add(currentStep.getDirStep());
+        movePlayer(true);
     }
 
     public void movePlayer(boolean move) {
-        if (trace.size() == 0 || !move){
+        if (trace.size() == 0 || !move) {
             return;
         }
+
         Direction currentMove = trace.get(trace.size() - 1); // get last move
         //StdDraw.pause(500);
 
-        if(!moveCreature(player, currentMove)){
+        // check if the creature was moved
+        if (!moveCreature(player, currentMove)) {
             // remove last move from trace and string
             trace.remove(trace.size() - 1);
             gameSequence = gameSequence.substring(0, gameSequence.length() - 1);
@@ -180,7 +285,7 @@ public class Game {
 
     private boolean validCreatureMove(SimplePoint newPosition) {
         TETile destination = world[newPosition.getXpos()][newPosition.getYpos()];
-        if (!destination.equals(Constants.FLOORTILE)){
+        if (!destination.equals(Constants.FLOORTILE)) {
             return false;
         }
         return true;
@@ -218,7 +323,7 @@ public class Game {
         return true; // creature was moved
     }
 
-    private boolean listenKeyboard() {
+    private boolean moveListener() {
         if (StdDraw.hasNextKeyTyped()) {
             char key = StdDraw.nextKeyTyped();
             key = Character.toUpperCase(key);
@@ -240,6 +345,7 @@ public class Game {
                     trace.add(Direction.EAST);
                     return true;
                 case ':':
+                    commandMode = true; // activate command mode
                     return false;
                 default:
                     return false;
@@ -269,12 +375,13 @@ public class Game {
             if (r == 0 || g == 0 || b == 0) {
                 darker = false;
             }
-        } else{
+        } else {
             r = r + 1;
             g = g + 1;
             b = b + 1;
 
-            if (r == titleColor.getRed() || g == titleColor.getGreen() || b == titleColor.getBlue()) {
+            if (r == titleColor.getRed() || g == titleColor.getGreen()
+                    || b == titleColor.getBlue()) {
                 darker = true;
             }
         }
@@ -289,4 +396,18 @@ public class Game {
         return world;
     }
 
+    public boolean animatedReload() {
+        return animatedReload;
+    }
+
+    public boolean hasNextStep() {
+        return analyzer.hasNextStep();
+    }
+
+    public void purgeCharBuffer() {
+        // clean accidental key presses before the game starts
+        while (StdDraw.hasNextKeyTyped()) {
+            StdDraw.nextKeyTyped();
+        }
+    }
 }

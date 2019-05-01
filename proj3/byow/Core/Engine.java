@@ -2,6 +2,7 @@ package byow.Core;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import edu.princeton.cs.introcs.StdDraw;
 
 public class Engine {
     private TERenderer ter = new TERenderer();
@@ -19,13 +20,26 @@ public class Engine {
         ter.initialize(WIDTH, HEIGHT); //render
         Game game = new Game(WIDTH, HEIGHT);
         game.start(); // displays main menu
-        //finalWorldFrame = game.getWorld();
+
+        // check if user want animated reload
+        if (game.animatedReload() && !game.over()) {
+            while (game.hasNextStep()) {
+                game.replay();
+                finalWorldFrame = game.getWorld();
+                ter.renderFrame(finalWorldFrame); // draw the world to the screen
+                StdDraw.pause(100);
+            }
+            game.purgeCharBuffer(); // cleans any key stroke pressed during replay
+        }
+        // main game loop
         while (!game.over()) {
             game.play();
             finalWorldFrame = game.getWorld();
             ter.renderFrame(finalWorldFrame); // draw the world to the screen
             //break;
         }
+        System.out.println("Game ended!");
+        System.exit(0);
     }
 
     /**
@@ -50,6 +64,20 @@ public class Engine {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] interactWithInputString(String input) {
+        // check if given input is valid
+        //ter.initialize(WIDTH, HEIGHT);
+        ArgumentAnalyzer analyzer = new ArgumentAnalyzer(input);
+        if (!analyzer.success()) {
+            return null;
+        }
+        Game game = new Game(WIDTH, HEIGHT);
+        game.executeArgument(analyzer);
+        finalWorldFrame = game.getWorld();
+        //ter.renderFrame(finalWorldFrame); // draw the world to the screen
+        return finalWorldFrame;
+    }
+
+    public TETile[][] interactWithInputStringOriginal(String input) {
         // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
         ter.initialize(WIDTH, HEIGHT);
 

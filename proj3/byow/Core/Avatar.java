@@ -76,9 +76,9 @@ public class Avatar implements Creature {
     }
 
     @Override
-    public void setPos(SimplePoint location) {
-        this.location.setX(location.getXpos());
-        this.location.setY(location.getYpos());
+    public void setPos(SimplePoint newlocation) {
+        this.location.setX(newlocation.getXpos());
+        this.location.setY(newlocation.getYpos());
     }
 
     @Override

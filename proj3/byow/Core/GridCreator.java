@@ -19,7 +19,7 @@ public class GridCreator {
     public GridCreator(int columns, int rows, RandomGen rgen) {
         this.columns = columns;
         this.rows = rows;
-        this.numRooms = rgen.random(10, 15);// not used
+        this.numRooms = rgen.random(10, 15); // not used
         this.world = new TETile[columns][rows];
         this.rgenGame = rgen;
         setup(rgen);
