@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.Random;
 
+import byow.Core.Constants;
 import edu.princeton.cs.introcs.StdDraw;
 import byow.Core.RandomUtils;
 
@@ -27,6 +28,7 @@ public class TETile {
     private final Color backgroundColor;
     private final String description;
     private final String filepath;
+    private int timeExplored = 0;
 
     /**
      * Full constructor for TETile objects.
@@ -43,6 +45,16 @@ public class TETile {
         this.backgroundColor = backgroundColor;
         this.description = description;
         this.filepath = filepath;
+    }
+
+    public TETile(char character, Color textColor, Color backgroundColor, String description,
+                  String filepath, int timeExplored) {
+        this.character = character;
+        this.textColor = textColor;
+        this.backgroundColor = backgroundColor;
+        this.description = description;
+        this.filepath = filepath;
+        this.timeExplored = timeExplored;
     }
 
     /**
@@ -68,6 +80,16 @@ public class TETile {
      */
     public TETile(TETile t, Color textColor) {
         this(t.character, textColor, t.backgroundColor, t.description, t.filepath);
+    }
+
+    /**
+     * Creates a copy of TETile t, except with given textColor and backgroundcolor.
+     * @param t tile to copy
+     * @param textColor foreground color for tile copy
+     */
+    public TETile(TETile t, Color textColor, Color backgroundColor) {
+        this(t.character, textColor, backgroundColor, t.description,
+                t.filepath, t.timeExplored + 1);
     }
 
 
@@ -192,5 +214,37 @@ public class TETile {
 
     public String toString() {
         return String.valueOf(character);
+    }
+
+    public static TETile lighterTile(TETile t, int intensity) {
+
+        if(t.timeExplored >= 15 || t.equals(Constants.NOTHING)) {
+            return t;
+        }
+
+        Color newTextColor = t.textColor;
+
+        Color newBackgroundColor = t.backgroundColor;
+        for (int i = intensity; i <= intensity; i++ ) {
+            newTextColor = newTextColor.brighter();
+            if (t.equals(Constants.WALLTILE)){
+                newBackgroundColor = newBackgroundColor.brighter();
+            }
+
+        }
+
+        return new TETile(t, newTextColor, newBackgroundColor);
+    }
+
+    public TETile getDarkerByOne(){
+        return new TETile(this, this.textColor.darker(), this.backgroundColor.darker());
+    }
+
+    public boolean equals(TETile other){
+        return this.description.equals(other.description);
+    }
+
+    public int getTimeExplored() {
+        return timeExplored;
     }
 }

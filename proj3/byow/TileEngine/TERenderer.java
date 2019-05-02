@@ -17,6 +17,7 @@ public class TERenderer {
     private int height;
     private int xOffset;
     private int yOffset;
+    private int statusBarOffset = 2;
 
     /**
      * Same functionality as the other initialization method. The only difference is that the xOff
@@ -29,7 +30,7 @@ public class TERenderer {
      */
     public void initialize(int w, int h, int xOff, int yOff) {
         this.width = w;
-        this.height = h;
+        this.height = h + statusBarOffset;
         this.xOffset = xOff;
         this.yOffset = yOff;
         StdDraw.setCanvasSize(width * TILE_SIZE, height * TILE_SIZE);
@@ -98,6 +99,6 @@ public class TERenderer {
                 world[x][y].draw(x + xOffset, y + yOffset);
             }
         }
-        StdDraw.show();
+        //StdDraw.show();
     }
 }

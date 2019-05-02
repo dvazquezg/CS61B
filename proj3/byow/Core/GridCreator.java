@@ -95,14 +95,28 @@ public class GridCreator {
             for (int x = room.xlowl; x <= room.xupr; x += 1) {
                 for (int y = room.ylowl; y <= room.yupr; y += 1) {
                     if (x > room.xlowl && x < room.xupr && y > room.ylowl && y < room.yupr) {
-                        world[x][y] = Constants.FLOORTILE;
+                        //world[x][y] = Constants.FLOORTILE;
+                        world[x][y] = darkerTile(Constants.FLOORTILE, null);
                     } else {
-                        world[x][y] = TETile.colorVariant(room.getWallTile(), 20, 20, 20, r);
+                        //world[x][y] = TETile.colorVariant(room.getWallTile(), 20, 20, 20, r);
+                        world[x][y] = darkerTile(room.getWallTile(), r);
                     }
                 }
             }
             //System.out.println("printing: " + room);
         }
+    }
+
+    private TETile darkerTile(TETile tile, Random r){
+        TETile returnTile = tile;
+        if (r != null){
+            returnTile = TETile.colorVariant(tile, 20, 20, 20, r);
+        }
+
+        for(int intensity = 0; intensity < 8; intensity++) {
+            returnTile = returnTile.getDarkerByOne();
+        }
+        return returnTile;
     }
 
     private void addHallwaysToGrid() {
@@ -113,9 +127,11 @@ public class GridCreator {
                     if (x > hallway.xlowl && x < hallway.xupr
                             && y > hallway.ylowl && y < hallway.yupr) {
                         //y = hallway.yupr; // jump to upper row to avoid center
-                        world[x][y] = Constants.FLOORTILE;
+                        //world[x][y] = Constants.FLOORTILE;
+                        world[x][y] = darkerTile(Constants.FLOORTILE, null);
                     } else {
-                        world[x][y] = TETile.colorVariant(hallway.getWallTile(), 20, 20, 20, r);
+                        //world[x][y] = TETile.colorVariant(hallway.getWallTile(), 20, 20, 20, r);
+                        world[x][y] = darkerTile(hallway.getWallTile(), r);
                     }
                 }
             }
@@ -131,7 +147,8 @@ public class GridCreator {
                 if (door.isConnected()) {
                     door.setTile(Constants.FLOORTILE); // if connected then is carved show floor
                 }
-                world[door.getXpos()][door.getYpos()] = door.getTile();
+                //world[door.getXpos()][door.getYpos()] = door.getTile();
+                world[door.getXpos()][door.getYpos()] = darkerTile(door.getTile(), null);
             }
         }
 
@@ -143,7 +160,8 @@ public class GridCreator {
                 if (door.isConnected()) {
                     door.setTile(Constants.FLOORTILE); // if connected the carve door
                 }
-                world[door.getXpos()][door.getYpos()] = door.getTile();
+                //world[door.getXpos()][door.getYpos()] = door.getTile();
+                world[door.getXpos()][door.getYpos()] = darkerTile(door.getTile(), null);
             }
         }
     }
@@ -203,7 +221,7 @@ public class GridCreator {
         // initialize tiles
         for (int x = 0; x < columns; x += 1) {
             for (int y = 0; y < rows; y += 1) {
-                world[x][y] = Tileset.NOTHING;
+                world[x][y] = Constants.NOTHING;
             }
         }
     }
@@ -227,7 +245,7 @@ public class GridCreator {
         int xloc = 0;
         int yloc = 0;
         TETile currentTile = Tileset.NOTHING;
-        while (currentTile != Tileset.FLOOR) {
+        while (!currentTile.equals(Constants.FLOORTILE)) {
             int ramdomIndex = rgenGame.random(0, rooms.size() - 1);
             Room room = rooms.get(ramdomIndex);
             xloc = rgenGame.random(room.xlowl + 1, room.xupr - 1); // x-coor between walls

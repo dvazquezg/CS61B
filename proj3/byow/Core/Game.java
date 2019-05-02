@@ -1,11 +1,14 @@
 package byow.Core;
 
 import byow.TileEngine.TETile;
+import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import static byow.Core.Constants.Direction;
 import static byow.Core.Constants.Action;
@@ -27,6 +30,8 @@ public class Game {
     private ArrayList<Direction> trace; // records players movements
     private String saveFile = "game.txt";
     private boolean animatedReload = false;
+    private RandomGen rgen; // random gen
+    private String currMouseTile;
 
 
     public Game(int w, int h) {
@@ -38,6 +43,7 @@ public class Game {
 
     public void start() {
         gameSequence = "";
+        currMouseTile = "Replay...";
         boolean invalidOption = false;
         Character option;
         while (true) {
@@ -50,6 +56,10 @@ public class Game {
                         startNewGame();
                         return;
                     case  'L':
+                        loadGame();
+                        return;
+                    case  'R':
+                        animatedReload = true;
                         loadGame();
                         return;
                     case  'Q':
@@ -73,20 +83,22 @@ public class Game {
         // loop until a valid input is entered
         int flashUnderscore = 100;
         boolean decrease = true;
+        // prompt user for seed, loop until valid seed has been entered
         while (true) {
             StdDraw.clear(Color.BLACK);
             StdDraw.setPenColor(Color.WHITE);
             StdDraw.text(x, y + 1.5, "Enter seed number followed by letter 'S':");
             // print flashing prompt
+            String displaySequence = gameSequence.substring(1); // skip 'N'
             if (decrease) {
                 flashUnderscore--;
-                StdDraw.text(x, y, gameSequence + "_");
+                StdDraw.text(x, y, displaySequence + "_");
                 if (flashUnderscore == 0) {
                     decrease = false;
                 }
             } else {
                 flashUnderscore++;
-                StdDraw.text(x, y, gameSequence + " ");
+                StdDraw.text(x, y, displaySequence + " ");
                 if (flashUnderscore == 100) {
                     decrease = true;
                 }
@@ -135,13 +147,15 @@ public class Game {
         StdDraw.text(x, y, "61B Dungeon Explorers: The Game");
         // draw options
         StdDraw.setPenColor(Color.WHITE);
-        y = height / 2 - 1.5;
         font = new Font("Monaco", Font.BOLD, 17);
         StdDraw.setFont(font);
+        y = height / 2 + 3;
         StdDraw.text(x, y, "New Game (N)");
-        y = height / 2;
-        StdDraw.text(x, y, "Load Game (L)");
         y = height / 2 + 1.5;
+        StdDraw.text(x, y, "Load Game (L)");
+        y = height / 2;
+        StdDraw.text(x, y, "Load & replay (R)");
+        y = height / 2 - 1.5;
         StdDraw.text(x, y, "Quit Game (Q)");
 
         if (invalidOption && dynamicColor.getRed() < 75) {
@@ -156,13 +170,41 @@ public class Game {
 
     public void play() {
         boolean newMove = moveListener();
-        //System.out.println("Current sequence: " + gameSequence);
-        //System.out.println(trace);
         if (commandMode) {
             commandListener();
         } else {
             movePlayer(newMove);
         }
+        mouseListener(); // listen to mouse actions
+    }
+
+    private void mouseListener() {
+        int xTile = (int) StdDraw.mouseX();
+        int yTile = (int) StdDraw.mouseY();
+        if (xTile < width && yTile < height) {
+            currMouseTile = world[xTile][yTile].description();
+        } else {
+            currMouseTile = "nothing";
+        }
+    }
+
+    public void refreshStats() {
+        Font font = new Font("Monaco", Font.BOLD, 18);
+        StdDraw.setFont(font);
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.setPenRadius(0.003);
+        StdDraw.line(0, height + 0.07, width, height + 0.07); // top line
+        double x = 4;
+        double y = height + 1;
+        StdDraw.text(x, y, currMouseTile); // display description of tile under pointer
+        x = width - 7.5;
+        StdDraw.text(x, y, getDate()); // display description of tile under pointer
+    }
+
+    private String getDate() {
+        Date date = new Date(); // this object contains the current date value
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        return formatter.format(date);
     }
 
     private void commandListener() {
@@ -248,18 +290,24 @@ public class Game {
      */
     public void executeArgument(ArgumentAnalyzer input) {
         if (input.getAction() == Action.LOAD) {
-            System.out.println("Loading...");
             loadGame();
         }
         restoreState(input.getRawInput());
     }
 
+    /**
+     * Recovers saved state without displaying anything
+     */
     private void directStateRecovery() {
         while (analyzer.hasNextStep()) {
             replay();
         }
     }
 
+    /**
+     * similar to play, but key strokes are taken from Argument analyzer
+     * which is initialized from the string stored in file or passed argument
+     */
     public void replay() {
         Step currentStep = analyzer.getNextStep();
         gameSequence += currentStep.getCharStep();
@@ -273,11 +321,10 @@ public class Game {
         }
 
         Direction currentMove = trace.get(trace.size() - 1); // get last move
-        //StdDraw.pause(500);
 
         // check if the creature was moved
         if (!moveCreature(player, currentMove)) {
-            // remove last move from trace and string
+            // if not, remove last move from trace and string
             trace.remove(trace.size() - 1);
             gameSequence = gameSequence.substring(0, gameSequence.length() - 1);
         }
@@ -320,8 +367,33 @@ public class Game {
         creatures.add(creature); // add updated creature
         world[oldLocation.getXpos()][oldLocation.getYpos()] = Constants.FLOORTILE;
         world[creature.getX()][creature.getY()] = creature.getTile();
+        explore(creature.getLocation()); // cool line of sight effect
         return true; // creature was moved
     }
+
+    private void explore(SimplePoint position) {
+        int x = position.getXpos();
+        int y = position.getYpos();
+        //System.out.println("x: " + x + " y: " + y);
+        for (int radius = 1; radius <= Constants.EXPLORERADIUS; radius++) {
+            makeLighter(x, y, radius);
+        }
+    }
+
+    private void makeLighter(int x, int y, int radius) {
+        for (int row = x - radius; row <= x + radius; row++) {
+            for (int col = y - radius; col <= y + radius; col++) {
+                if ( row >= 0 && row < width && col >= 0 && col < height) {
+
+                    if(row == x && col == y) {
+                        continue;
+                    }
+                    world[row][col] = TETile.lighterTile(world[row][col], radius);
+                }
+            }
+        }
+    }
+
 
     private boolean moveListener() {
         if (StdDraw.hasNextKeyTyped()) {
@@ -354,10 +426,12 @@ public class Game {
         return false;
     }
 
-
-
+    /**
+     * Generated initial grid
+     * @param seed seed number to seed random generator
+     */
     public void initialWorld(long seed) {
-        RandomGen rgen = new RandomGen(seed); // random number generator
+        rgen = new RandomGen(seed); // random number generator
         worldGen = new GridCreator(width, height, rgen); // get world grid
         world = worldGen.grid();
     }

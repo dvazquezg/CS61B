@@ -27,6 +27,8 @@ public class Engine {
                 game.replay();
                 finalWorldFrame = game.getWorld();
                 ter.renderFrame(finalWorldFrame); // draw the world to the screen
+                game.refreshStats();
+                StdDraw.show();
                 StdDraw.pause(100);
             }
             game.purgeCharBuffer(); // cleans any key stroke pressed during replay
@@ -36,7 +38,8 @@ public class Engine {
             game.play();
             finalWorldFrame = game.getWorld();
             ter.renderFrame(finalWorldFrame); // draw the world to the screen
-            //break;
+            game.refreshStats();
+            StdDraw.show();
         }
         System.out.println("Game ended!");
         System.exit(0);
@@ -74,6 +77,7 @@ public class Engine {
         game.executeArgument(analyzer);
         finalWorldFrame = game.getWorld();
         //ter.renderFrame(finalWorldFrame); // draw the world to the screen
+        //StdDraw.show();
         return finalWorldFrame;
     }
 
@@ -90,7 +94,6 @@ public class Engine {
         RandomGen rgen = new RandomGen(analyzer.getSeed()); // random number generator
         finalWorldFrame = new GridCreator(WIDTH, HEIGHT, rgen).grid(); // get world
         ter.renderFrame(finalWorldFrame); // draw the world to the screen
-
         return finalWorldFrame;
     }
 
