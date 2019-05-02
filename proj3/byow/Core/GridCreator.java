@@ -107,13 +107,13 @@ public class GridCreator {
         }
     }
 
-    private TETile darkerTile(TETile tile, Random r){
+    private TETile darkerTile(TETile tile, Random r) {
         TETile returnTile = tile;
-        if (r != null){
+        if (r != null) {
             returnTile = TETile.colorVariant(tile, 20, 20, 20, r);
         }
 
-        for(int intensity = 0; intensity < 8; intensity++) {
+        for (int intensity = 0; intensity < 8; intensity++) {
             returnTile = returnTile.getDarkerByOne();
         }
         return returnTile;

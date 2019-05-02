@@ -218,16 +218,16 @@ public class TETile {
 
     public static TETile lighterTile(TETile t, int intensity) {
 
-        if(t.timeExplored >= 15 || t.equals(Constants.NOTHING)) {
+        if (t.timeExplored >= 15 || t.equals(Constants.NOTHING)) {
             return t;
         }
 
         Color newTextColor = t.textColor;
 
         Color newBackgroundColor = t.backgroundColor;
-        for (int i = intensity; i <= intensity; i++ ) {
+        for (int i = intensity; i <= intensity; i++) {
             newTextColor = newTextColor.brighter();
-            if (t.equals(Constants.WALLTILE)){
+            if (t.equals(Constants.WALLTILE)) {
                 newBackgroundColor = newBackgroundColor.brighter();
             }
 
@@ -236,11 +236,11 @@ public class TETile {
         return new TETile(t, newTextColor, newBackgroundColor);
     }
 
-    public TETile getDarkerByOne(){
+    public TETile getDarkerByOne() {
         return new TETile(this, this.textColor.darker(), this.backgroundColor.darker());
     }
 
-    public boolean equals(TETile other){
+    public boolean equals(TETile other) {
         return this.description.equals(other.description);
     }
 

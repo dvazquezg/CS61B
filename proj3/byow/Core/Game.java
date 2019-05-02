@@ -1,7 +1,6 @@
 package byow.Core;
 
 import byow.TileEngine.TETile;
-import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 import java.awt.Color;
 import java.awt.Font;
@@ -383,9 +382,9 @@ public class Game {
     private void makeLighter(int x, int y, int radius) {
         for (int row = x - radius; row <= x + radius; row++) {
             for (int col = y - radius; col <= y + radius; col++) {
-                if ( row >= 0 && row < width && col >= 0 && col < height) {
+                if (row >= 0 && row < width && col >= 0 && col < height) {
 
-                    if(row == x && col == y) {
+                    if (row == x && col == y) {
                         continue;
                     }
                     world[row][col] = TETile.lighterTile(world[row][col], radius);
