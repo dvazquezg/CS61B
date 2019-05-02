@@ -1,6 +1,7 @@
 package byow.Core;
 
 import byow.TileEngine.TETile;
+import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 import java.awt.Color;
 import java.awt.Font;
@@ -31,6 +32,8 @@ public class Game {
     private boolean animatedReload = false;
     private RandomGen rgen; // random gen
     private String currMouseTile;
+    private boolean animatedTracer = false;
+    private boolean darkRoom = false;
 
 
     public Game(int w, int h) {
@@ -65,6 +68,12 @@ public class Game {
                         gameOver = true;
                         System.exit(0);
                         return;
+                    case 'T':
+                        animatedTracer = !animatedTracer;
+                        break;
+                    case 'G':
+                        darkRoom = !darkRoom;
+                        break;
                     default:
                         invalidOption = true;
                         break;
@@ -127,6 +136,12 @@ public class Game {
         SimplePoint playerLoc = worldGen.getRandAvaFloorLoc(); // get available location
         player = new Avatar(playerLoc, "You"); // create player
         placeCreatureOnWorld(player); // place main player in grid
+        // make as ligth as if walked 10 steps in place
+        if (darkRoom) {
+            for (int i = 0; i < 10; i++) {
+                explore(playerLoc);
+            }
+        }
     }
 
     private void placeCreatureOnWorld(Creature creature) {
@@ -156,12 +171,16 @@ public class Game {
         StdDraw.text(x, y, "Load & replay (R)");
         y = height / 2 - 1.5;
         StdDraw.text(x, y, "Quit Game (Q)");
+        y = height / 2 - 3;
+        StdDraw.text(x, y, "Tracer (T) " + ((animatedTracer) ? "Activated" : "Deactivated"));
+        y = height / 2 - 4.5;
+        StdDraw.text(x, y, "Dark Room (G) " + ((darkRoom) ? "Activated" : "Deactivated"));
 
         if (invalidOption && dynamicColor.getRed() < 75) {
             font = new Font("Monaco", Font.BOLD, 15);
             StdDraw.setFont(font);
             StdDraw.setPenColor(Color.RED);
-            y = height / 3;
+            y = height / 4;
             StdDraw.text(x, y, "Invalid Option, try again!");
         }
         StdDraw.show();
@@ -364,9 +383,20 @@ public class Game {
         }
 
         creatures.add(creature); // add updated creature
-        world[oldLocation.getXpos()][oldLocation.getYpos()] = Constants.FLOORTILE;
+
+        TETile destinyTile = world[creature.getX()][creature.getY()];
+        // for trace set to Constants.FLOORTILE instead of destinyTile
+
+        if (animatedTracer) {
+            world[oldLocation.getXpos()][oldLocation.getYpos()] = Tileset.FLOORTRACE;
+        } else {
+            world[oldLocation.getXpos()][oldLocation.getYpos()] = destinyTile;
+        }
         world[creature.getX()][creature.getY()] = creature.getTile();
-        explore(creature.getLocation()); // cool line of sight effect
+
+        if (darkRoom) {
+            explore(creature.getLocation()); // cool line of sight effect
+        }
         return true; // creature was moved
     }
 
@@ -431,7 +461,7 @@ public class Game {
      */
     public void initialWorld(long seed) {
         rgen = new RandomGen(seed); // random number generator
-        worldGen = new GridCreator(width, height, rgen); // get world grid
+        worldGen = new GridCreator(width, height, rgen, darkRoom); // get world grid
         world = worldGen.grid();
     }
 

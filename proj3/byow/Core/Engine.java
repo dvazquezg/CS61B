@@ -92,7 +92,7 @@ public class Engine {
         }
 
         RandomGen rgen = new RandomGen(analyzer.getSeed()); // random number generator
-        finalWorldFrame = new GridCreator(WIDTH, HEIGHT, rgen).grid(); // get world
+        finalWorldFrame = new GridCreator(WIDTH, HEIGHT, rgen, false).grid(); // get world
         ter.renderFrame(finalWorldFrame); // draw the world to the screen
         return finalWorldFrame;
     }

@@ -15,13 +15,15 @@ public class GridCreator {
     protected static ArrayList<Hallway> hallways;    // List of hallways in this grid
     protected TETile[][] world;   // The world grid to be generated
     protected RandomGen rgenGame; // The random gen (used for method-related game dynamics)
+    protected boolean darkRoom = false;
 
-    public GridCreator(int columns, int rows, RandomGen rgen) {
+    public GridCreator(int columns, int rows, RandomGen rgen, boolean darkRoom) {
         this.columns = columns;
         this.rows = rows;
         this.numRooms = rgen.random(10, 15); // not used
         this.world = new TETile[columns][rows];
         this.rgenGame = rgen;
+        this.darkRoom = darkRoom;
         setup(rgen);
     }
 
@@ -108,6 +110,9 @@ public class GridCreator {
     }
 
     private TETile darkerTile(TETile tile, Random r) {
+        if (!darkRoom) {
+            return tile;
+        }
         TETile returnTile = tile;
         if (r != null) {
             returnTile = TETile.colorVariant(tile, 20, 20, 20, r);

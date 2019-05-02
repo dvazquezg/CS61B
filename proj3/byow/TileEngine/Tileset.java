@@ -39,6 +39,8 @@ public class Tileset {
             new Color(3, 3, 3), "wall");
     public static final TETile DARKFLOOR = new TETile('·', new Color(9, 19, 9), Color.black,
             "floor");
+    public static final TETile FLOORTRACE = new TETile('·', new Color(72, 0, 255), Color.black,
+            "floor");
 }
 
 

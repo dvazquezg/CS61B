@@ -218,7 +218,7 @@ public class TETile {
 
     public static TETile lighterTile(TETile t, int intensity) {
 
-        if (t.timeExplored >= 15 || t.equals(Constants.NOTHING)) {
+        if (t.timeExplored >= 16 || t.equals(Constants.NOTHING)) {
             return t;
         }
 
