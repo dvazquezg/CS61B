@@ -1,5 +1,7 @@
 package byow.Core;
 
+import java.util.Objects;
+
 public class SimplePoint implements Point {
 
     private int x;
@@ -44,20 +46,17 @@ public class SimplePoint implements Point {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (other == null) {
-            return false;
-        }
-        if (other.getClass() != this.getClass()) {
-            return false;
-        }
-        SimplePoint otherPoint = (SimplePoint) other;
-        return this.id == otherPoint.id;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimplePoint that = (SimplePoint) o;
+        return x == that.x &&
+                y == that.y;
     }
 
     @Override
     public int hashCode() {
-        return this.id;
+        return Objects.hash(x, y);
     }
 
     @Override

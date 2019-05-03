@@ -1,5 +1,8 @@
 package byow.Core;
 
+import byow.AStar.AStarSolver;
+import byow.AStar.SolutionPrinter;
+import byow.AStar.TileMapGraph;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
@@ -15,7 +18,8 @@ import static byow.Core.Constants.Action;
 
 public class Game {
     private GridCreator worldGen;
-    private TETile[][] world;
+    private TETile[][] world; // tile grid of the world
+    private TileMapGraph worldMap; // map used by creatures to move around
     private boolean gameOver = false;
     private int width;
     private int height;
@@ -56,6 +60,7 @@ public class Game {
                 switch (option) {
                     case 'N':
                         startNewGame();
+                        chasePathFinder();
                         return;
                     case  'L':
                         loadGame();
@@ -124,6 +129,7 @@ public class Game {
                     if (analyzer != null && analyzer.success()) {
                         initialWorld(analyzer.getSeed()); // set the grid
                         createMainPlayer(); // positions main player's avatar
+                        createGhost();
                         break; // break loop and return to start() loop
                     } else {
                         gameSequence = "N"; // reset if sequence is invalid
@@ -140,6 +146,18 @@ public class Game {
         if (darkRoom) {
             for (int i = 0; i < 10; i++) {
                 explore(playerLoc);
+            }
+        }
+    }
+    private Avatar ghost;
+    private void createGhost() {
+        SimplePoint ghostLoc = worldGen.getRandAvaFloorLoc(); // get available location
+        ghost = new Avatar(ghostLoc, "Ghost"); // create player
+        placeCreatureOnWorld(ghost); // place main player in grid
+        // make as ligth as if walked 10 steps in place
+        if (darkRoom) {
+            for (int i = 0; i < 10; i++) {
+                explore(ghostLoc);
             }
         }
     }
@@ -461,8 +479,10 @@ public class Game {
      */
     public void initialWorld(long seed) {
         rgen = new RandomGen(seed); // random number generator
+        worldMap = new TileMapGraph(); // initialize map
         worldGen = new GridCreator(width, height, rgen, darkRoom); // get world grid
         world = worldGen.grid();
+        graphFiller();
     }
 
     private void setTitleColor() {
@@ -513,4 +533,65 @@ public class Game {
             StdDraw.nextKeyTyped();
         }
     }
+
+
+    /////////////// AUTOMATA AI code ///////////////
+
+    private void graphFiller() {
+        int id = 0;
+        for (int i = world[0].length - 1; i >= 0; i--) {
+            for (int j = 0; j < world.length; j++) {
+                if (world[j][i].equals(Constants.FLOORTILE)) {
+                    SimplePoint curPoint = new SimplePoint(j, i, id);
+                    worldMap.addNode(curPoint);
+                    addNeighbors(curPoint);
+                }
+                id += 1;
+            }
+        }
+        edgeFiller(); // add nodes
+    }
+
+    private void edgeFiller() {
+        for (SimplePoint point: worldMap.getPoints().values()) {
+            addNeighbors(point);
+        }
+    }
+
+    private void addNeighbors(SimplePoint curPoint) {
+        int idNeighbor;
+        for (int j = 1; j >= -1; j--) {
+            idNeighbor = curPoint.getId() + width * -j;
+            for (int i = -1; i <= 1; i++) {
+                // get new coordinated of surrounding neighbors
+                int xNeighbor = curPoint.getXpos() + i;
+                int yNeighbor = curPoint.getYpos() + j;
+                // check if new coords are within the world
+                if (xNeighbor >= 0 && xNeighbor < width && yNeighbor >= 0 && yNeighbor < height) {
+                    if (!(xNeighbor == curPoint.getXpos() && yNeighbor == curPoint.getYpos())){
+                        if (world[xNeighbor][yNeighbor].equals(Constants.FLOORTILE)) {
+                            worldMap.addWeightedEdge(curPoint.getId(), idNeighbor + i);
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    private void chasePathFinder() {
+        int idPlayer = worldMap.getId(player.getLocation());
+        int idGhost = worldMap.getId(ghost.getLocation());
+        AStarSolver<Integer> solver = new AStarSolver<>(worldMap, idPlayer, idGhost, 20);
+
+
+        for(Integer id : solver.solution()){
+            SimplePoint point = worldMap.getPoint(id);
+            world[point.getXpos()][point.getYpos()] = Tileset.FLOWER;
+        }
+
+        StdDraw.show();
+        SolutionPrinter.summarizeSolution(solver, "->");
+    }
+
 }

@@ -26,6 +26,6 @@ public class WeightedEdge<Vertex> {
 
     @Override
     public String toString() {
-        return "from: " + v + " to: " + w + ", weight: " + weight;
+        return "Edge from: " + v + " to: " + w + ", weight: " + weight;
     }
 }

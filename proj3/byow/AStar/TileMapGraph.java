@@ -7,6 +7,7 @@ import java.util.*;
 public class TileMapGraph implements AStarGraph<Integer> {
 
     private Map<Integer, SimplePoint> points = new HashMap<>();
+    private Map<SimplePoint, Integer> pointToId = new HashMap<>();
     private Map<Integer, Set<WeightedEdge<Integer>>> neighbors = new HashMap<>();
 
     public TileMapGraph() {
@@ -43,26 +44,48 @@ public class TileMapGraph implements AStarGraph<Integer> {
     }
 
     /** Adds a node to this graph, if it doesn't yet exist. **/
-    void addNode(SimplePoint point) {
+    public void addNode(SimplePoint point) {
         if (!points.containsKey(point.getId())) {
             points.put(point.getId(), point);
+            pointToId.put(point, point.getId());
             neighbors.put(point.getId(), new HashSet<>());
         }
     }
 
-    void addWeightedEdge(int fromID, int toID) {
+    public void addWeightedEdge(int fromID, int toID) {
         if (points.containsKey(fromID) && points.containsKey(toID)) {
             SimplePoint from = points.get(fromID);
             SimplePoint to = points.get(toID);
-            double weight = distance(from.getXpos(), to.getYpos(), from.getXpos(), to.getYpos());
+            double weight = distance(from.getXpos(), from.getYpos(), to.getXpos(), to.getYpos());
             Set<WeightedEdge<Integer>> edgeSet = neighbors.get(fromID);
+            //System.out.println("Edge: from: " + fromID + " to : " + toID + ", weight: " + weight);
+
+            if(weight >= 2) {
+                return;
+            }
             edgeSet.add(new WeightedEdge<>(from.getId(), to.getId(), weight));
         }
+    }
+
+    public int getId(SimplePoint point) {
+        if (!pointToId.containsKey(point)) {
+            return -1;
+        }
+        return pointToId.get(point);
     }
 
     public Map<Integer, SimplePoint> getPoints() {
         return points;
     }
+
+    public SimplePoint getPoint(int id) {
+        if (!points.containsKey(id)){
+            return null;
+        }
+        return points.get(id);
+    }
+
+
 
     public Map<Integer, Set<WeightedEdge<Integer>>> getNeighbors() {
         return neighbors;

@@ -15,8 +15,6 @@ public class TestAStar {
 
     @Test
     public void sanityCheck() {
-        width = 10;
-        height = 10;
         // check if given input is valid
         worldMap = new TileMapGraph();
 
@@ -32,16 +30,19 @@ public class TestAStar {
 
         //System.out.println(worldMap.vertices().size());
         //worldMap.vertices().
+        int testPoint = 14;
+        System.out.println(worldMap.getPoints().get(testPoint));
 
-        System.out.println(worldMap.getPoints().get(14));
+        System.out.println(worldMap.getPoints().get(testPoint).equals(new SimplePoint(4, 8)));
 
-        System.out.println("Neighbors: " + worldMap.neighbors(14).size());
-        /*
-        for (WeightedEdge<Integer> edge : worldMap.neighbors(28)) {
+        System.out.println("Neighbors: " + worldMap.neighbors(testPoint).size());
+
+        for (WeightedEdge<Integer> edge : worldMap.neighbors(testPoint)) {
             System.out.println(edge);
 
-        }*/
+        }
 
+        System.out.println("Get Id: " + worldMap.getId(new SimplePoint(4, 8)));
 
         SimplePoint[][] grid = new SimplePoint[height][width];
         int id = 0;
@@ -52,9 +53,9 @@ public class TestAStar {
             }
         }
 
-        //AStarSolver<Integer> solver = new AStarSolver<>(worldMap, 11, 12, 20);
+        AStarSolver<Integer> solver = new AStarSolver<>(worldMap, 14, 75, 20);
 
-        //SolutionPrinter.summarizeSolution(solver, "->");
+        SolutionPrinter.summarizeSolution(solver, "->");
     }
 
     private void graphFiller() {
@@ -71,6 +72,13 @@ public class TestAStar {
                 //System.out.print(count + " " + (count < 10 ? " ":""));
             }
             //System.out.println();
+        }
+        edgeFiller(); // add nodes
+    }
+
+    private void edgeFiller() {
+        for (SimplePoint point: worldMap.getPoints().values()) {
+            addNeighbors(point);
         }
     }
 
@@ -97,12 +105,11 @@ public class TestAStar {
                     }
 
                 }
-                //System.out.print("(" + i + ", " + j + ") ");
             }
-            System.out.println();
+            //System.out.println();
         }
 
-        System.out.println();
+        //System.out.println();
     }
 
 
@@ -119,7 +126,7 @@ public class TestAStar {
                     grid += id + " ";
                     //id ++;
                 } else {
-                    grid += finalWorldFrame[j][i].toString() + " ";
+                    grid += finalWorldFrame[j][i].toString() + "  ";
                 }
 
                 id ++;
