@@ -45,8 +45,9 @@ public class Game {
     private boolean darkRoom = false;
     private SimplePoint keyLoc;
     private SimplePoint exitLoc;
-    private boolean hasKey = false;
-    private boolean won = false;
+    private boolean hasKey = false; // key picked up
+    private boolean won = false; // game won
+    private boolean wasQuit = false;
 
     public Game(int w, int h) {
         creatures = new HashSet<>();
@@ -244,6 +245,9 @@ public class Game {
     }
 
     public void displayFinalMessage() {
+        if (wasQuit) {
+            return;
+        }
         StdDraw.clear(Color.BLACK);
         Font font = new Font("Monaco", Font.BOLD, 30);
         StdDraw.setFont(font);
@@ -293,6 +297,7 @@ public class Game {
                 switch (key) {
                     case 'Q':
                         saveGame();
+                        wasQuit = true;
                         return;
                     default:
                         commandMode = false;
@@ -350,6 +355,7 @@ public class Game {
             // initialize world
             initialWorld(analyzer.getSeed()); // set the grid
             createMainPlayer(); // positions main player's avatar
+            createGhost(); // position main ghost
         }
 
         if (analyzer.hasSteps() && !animatedReload) {
@@ -391,6 +397,8 @@ public class Game {
         gameSequence += currentStep.getCharStep();
         trace.add(currentStep.getDirStep());
         movePlayer(true);
+        chasePlayerByOne();
+        //winLoseChecker();
     }
 
     public void movePlayer(boolean move) {
@@ -700,7 +708,7 @@ public class Game {
         }
 
         timerChase += 1;
-
+        //System.out.println(timerChase);
         if (timerChase < 50) {
             return;
         }
