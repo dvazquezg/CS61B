@@ -41,8 +41,9 @@ public class Engine {
             game.refreshStats();
             StdDraw.show();
         }
+        game.displayFinalMessage();
         System.out.println("Game ended!");
-        System.exit(0);
+        //System.exit(0);
     }
 
     /**

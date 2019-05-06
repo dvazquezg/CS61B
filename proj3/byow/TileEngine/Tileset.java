@@ -41,6 +41,8 @@ public class Tileset {
             "floor");
     public static final TETile FLOORTRACE = new TETile('·', new Color(72, 0, 255), Color.black,
             "floor");
+    public static final TETile GHOST = new TETile('Ÿ', Color.white, Color.black, "ghost");
+    public static final TETile KEY = new TETile('♀', new Color(186, 192, 6), Color.black, "key");
 }
 
 

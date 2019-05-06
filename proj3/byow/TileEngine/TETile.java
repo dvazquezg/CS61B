@@ -87,9 +87,9 @@ public class TETile {
      * @param t tile to copy
      * @param textColor foreground color for tile copy
      */
-    public TETile(TETile t, Color textColor, Color backgroundColor) {
+    public TETile(TETile t, Color textColor, Color backgroundColor, boolean inc) {
         this(t.character, textColor, backgroundColor, t.description,
-                t.filepath, t.timeExplored + 1);
+                t.filepath, t.timeExplored + (inc ? 1 : -1));
     }
 
 
@@ -233,11 +233,31 @@ public class TETile {
 
         }
 
-        return new TETile(t, newTextColor, newBackgroundColor);
+        return new TETile(t, newTextColor, newBackgroundColor, true);
+    }
+
+    public static TETile darkerTile(TETile t, int intensity) {
+
+        if (t.timeExplored <= 10 || t.equals(Constants.NOTHING)) {
+            return t;
+        }
+
+        Color newTextColor = t.textColor;
+
+        Color newBackgroundColor = t.backgroundColor;
+        for (int i = intensity; i <= intensity; i++) {
+            newTextColor = newTextColor.darker();
+            if (t.equals(Constants.WALLTILE)) {
+                newBackgroundColor = newBackgroundColor.darker();
+            }
+
+        }
+
+        return new TETile(t, newTextColor, newBackgroundColor, false);
     }
 
     public TETile getDarkerByOne() {
-        return new TETile(this, this.textColor.darker(), this.backgroundColor.darker());
+        return new TETile(this, this.textColor.darker(), this.backgroundColor.darker(), true);
     }
 
     public boolean equals(TETile other) {

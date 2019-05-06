@@ -13,6 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+
 import static byow.Core.Constants.Direction;
 import static byow.Core.Constants.Action;
 
@@ -30,6 +32,9 @@ public class Game {
     private String gameSequence;
     private ArgumentAnalyzer analyzer;
     private Avatar player;
+    private Ghost ghost;
+    private List<Integer> chasePath;
+    private int timerChase = 0;
     private HashSet<Creature> creatures;
     private ArrayList<Direction> trace; // records players movements
     private String saveFile = "game.txt";
@@ -38,7 +43,10 @@ public class Game {
     private String currMouseTile;
     private boolean animatedTracer = false;
     private boolean darkRoom = false;
-
+    private SimplePoint keyLoc;
+    private SimplePoint exitLoc;
+    private boolean hasKey = false;
+    private boolean won = false;
 
     public Game(int w, int h) {
         creatures = new HashSet<>();
@@ -129,7 +137,7 @@ public class Game {
                     if (analyzer != null && analyzer.success()) {
                         initialWorld(analyzer.getSeed()); // set the grid
                         createMainPlayer(); // positions main player's avatar
-                        createGhost();
+                        createGhost(); // position main ghost
                         break; // break loop and return to start() loop
                     } else {
                         gameSequence = "N"; // reset if sequence is invalid
@@ -149,18 +157,21 @@ public class Game {
             }
         }
     }
-    private Avatar ghost;
+
     private void createGhost() {
         SimplePoint ghostLoc = worldGen.getRandAvaFloorLoc(); // get available location
-        ghost = new Avatar(ghostLoc, "Ghost"); // create player
+        ghost = new Ghost(ghostLoc, "Ghost"); // create player
         placeCreatureOnWorld(ghost); // place main player in grid
-        // make as ligth as if walked 10 steps in place
-        if (darkRoom) {
-            for (int i = 0; i < 10; i++) {
-                explore(ghostLoc);
-            }
-        }
     }
+
+
+    private void createKeyAndDoor() {
+        keyLoc = worldGen.getRandAvaFloorLoc(); // get available location
+        world[keyLoc.getXpos()][keyLoc.getYpos()] = Constants.KEYTILE;
+        exitLoc = worldGen.getRandAvaFloorLoc();
+        world[exitLoc.getXpos()][exitLoc.getYpos()] = Tileset.LOCKED_DOOR;
+    }
+
 
     private void placeCreatureOnWorld(Creature creature) {
         creatures.add(creature); // add to array of creatures
@@ -210,8 +221,39 @@ public class Game {
             commandListener();
         } else {
             movePlayer(newMove);
+            chasePlayerByOne();
+            winLoseChecker();
         }
         mouseListener(); // listen to mouse actions
+    }
+
+    private void winLoseChecker() {
+        if (player.getLocation().equals(ghost.getLocation())) {
+            gameOver = true;
+            won = false;
+        }
+
+        if (exitLoc.equals(player.getLocation()) && hasKey) {
+            gameOver = true;
+            won = true;
+        }
+    }
+
+    private boolean playerWon() {
+        return won;
+    }
+
+    public void displayFinalMessage() {
+        StdDraw.clear(Color.BLACK);
+        Font font = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(font);
+        StdDraw.setPenColor(Color.YELLOW);
+        String finalmsg = "You Lose!";
+        if (playerWon()) {
+            finalmsg = "You win!";
+        }
+        StdDraw.text(width / 2, height / 2, finalmsg );
+        StdDraw.show();
     }
 
     private void mouseListener() {
@@ -363,18 +405,27 @@ public class Game {
             // if not, remove last move from trace and string
             trace.remove(trace.size() - 1);
             gameSequence = gameSequence.substring(0, gameSequence.length() - 1);
+        } else {
+            chasePathFinder(); // update path from ghost to player
         }
     }
 
     private boolean validCreatureMove(SimplePoint newPosition) {
         TETile destination = world[newPosition.getXpos()][newPosition.getYpos()];
-        if (!destination.equals(Constants.FLOORTILE)) {
-            return false;
+        //  for ghost: it can occupy avatar tile
+        if (destination.equals(Constants.FLOORTILE)
+                || destination.equals(Constants.AVATARTILE)
+                || destination.equals(Constants.LOCKEDDOORTILE)
+                || destination.equals(Constants.KEYTILE)) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     private boolean moveCreature(Creature creature, Direction dir) {
+        if (dir == null) {
+            return false;
+        }
         SimplePoint oldLocation = new SimplePoint(creature.getX(), creature.getY());
         creatures.remove(creature);
         switch (dir) {
@@ -394,6 +445,7 @@ public class Game {
                 break;
         }
 
+
         if (!validCreatureMove(creature.getLocation())) {
             creature.setLocation(oldLocation);
             creatures.add(creature);
@@ -403,6 +455,25 @@ public class Game {
         creatures.add(creature); // add updated creature
 
         TETile destinyTile = world[creature.getX()][creature.getY()];
+
+        // for ghost eating player
+        ///////////// CHECK WIN
+        if (destinyTile.equals(Constants.AVATARTILE)) {
+            destinyTile = Constants.FLOORTILE;
+        }
+
+        if (destinyTile.equals(Constants.KEYTILE) && creature.getTile().equals(Constants.AVATARTILE)) {
+            destinyTile = Constants.FLOORTILE;
+            hasKey = true;
+        }
+
+        if (destinyTile.equals(Constants.LOCKEDDOORTILE) && creature.getTile().equals(Constants.AVATARTILE)
+            && hasKey) {
+            destinyTile = Constants.FLOORTILE;
+        }
+
+        ///////////// END CHECK WIN
+
         // for trace set to Constants.FLOORTILE instead of destinyTile
 
         if (animatedTracer) {
@@ -422,6 +493,15 @@ public class Game {
         int x = position.getXpos();
         int y = position.getYpos();
         //System.out.println("x: " + x + " y: " + y);
+
+        if (world[position.getXpos()][position.getYpos()].equals(Constants.GHOSTTILE)) {
+            for (int radius = 1; radius <= Constants.EXPLORERADIUS; radius++) {
+                makeDarker(x, y, radius);
+            }
+
+            return;
+        }
+
         for (int radius = 1; radius <= Constants.EXPLORERADIUS; radius++) {
             makeLighter(x, y, radius);
         }
@@ -441,6 +521,19 @@ public class Game {
         }
     }
 
+    private void makeDarker(int x, int y, int radius) {
+        for (int row = x - radius; row <= x + radius; row++) {
+            for (int col = y - radius; col <= y + radius; col++) {
+                if (row >= 0 && row < width && col >= 0 && col < height) {
+
+                    if (row == x && col == y) {
+                        continue;
+                    }
+                    world[row][col] = TETile.darkerTile(world[row][col], radius);
+                }
+            }
+        }
+    }
 
     private boolean moveListener() {
         if (StdDraw.hasNextKeyTyped()) {
@@ -483,6 +576,7 @@ public class Game {
         worldGen = new GridCreator(width, height, rgen, darkRoom); // get world grid
         world = worldGen.grid();
         graphFiller();
+        createKeyAndDoor();
     }
 
     private void setTitleColor() {
@@ -582,8 +676,11 @@ public class Game {
     private void chasePathFinder() {
         int idPlayer = worldMap.getId(player.getLocation());
         int idGhost = worldMap.getId(ghost.getLocation());
-        AStarSolver<Integer> solver = new AStarSolver<>(worldMap, idPlayer, idGhost, 20);
+        AStarSolver<Integer> solver = new AStarSolver<>(worldMap, idGhost, idPlayer, 10);
 
+        chasePath = solver.solution();
+
+        /*
 
         for(Integer id : solver.solution()){
             SimplePoint point = worldMap.getPoint(id);
@@ -591,7 +688,45 @@ public class Game {
         }
 
         StdDraw.show();
-        SolutionPrinter.summarizeSolution(solver, "->");
+        */
+        //SolutionPrinter.summarizeSolution(solver, "->");
+
+    }
+
+    private void chasePlayerByOne() {
+        if (chasePath.size() <= 1) {
+            timerChase = 0;
+            return;
+        }
+
+        timerChase += 1;
+
+        if (timerChase < 50) {
+            return;
+        }
+        timerChase = 0;
+
+        Integer tileID = chasePath.remove(1); // get next tile to move onto
+        SimplePoint newGostLoc = worldMap.getPoint(tileID);
+        SimplePoint oldGhostLoc = ghost.getLocation();
+        //ghost.setLocation(newGostLoc);
+        Direction dirGhost = ghostDirection(newGostLoc, oldGhostLoc);
+        //System.out.println(dirGhost);
+        moveCreature(ghost, dirGhost);
+        //world[ghost.getLocation().getXpos()][ghost.getLocation().getYpos()] = Tileset.FLOWER;
+    }
+
+    private Direction ghostDirection(SimplePoint newLoc, SimplePoint oldLoc) {
+        if (newLoc.getXpos() < oldLoc.getXpos()) {
+            return Direction.WEST;
+        } else if (newLoc.getXpos() > oldLoc.getXpos()) {
+            return Direction.EAST;
+        } else if (newLoc.getYpos() > oldLoc.getYpos()) {
+            return Direction.NORTH;
+        } else if (newLoc.getYpos() < oldLoc.getYpos()) {
+            return Direction.SOUTH;
+        }
+        return  null;
     }
 
 }

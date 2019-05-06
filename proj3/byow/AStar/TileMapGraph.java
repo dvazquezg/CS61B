@@ -61,7 +61,7 @@ public class TileMapGraph implements AStarGraph<Integer> {
             //System.out.println("Edge: from: " + fromID + " to : " + toID + ", weight: " + weight);
 
             if(weight >= 2) {
-                return;
+                return; // avoid diagonal movements
             }
             edgeSet.add(new WeightedEdge<>(from.getId(), to.getId(), weight));
         }
