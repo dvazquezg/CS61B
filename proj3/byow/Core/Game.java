@@ -15,8 +15,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
-import static byow.Core.Constants.Direction;
-import static byow.Core.Constants.Action;
+import static byow.Core.Constants.*;
 
 public class Game {
     private GridCreator worldGen;
@@ -709,7 +708,7 @@ public class Game {
 
         timerChase += 1;
         //System.out.println(timerChase);
-        if (timerChase < 50) {
+        if (timerChase < Constants.GHOSTSPEED) {
             return;
         }
         timerChase = 0;

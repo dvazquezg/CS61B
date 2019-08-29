@@ -28,4 +28,5 @@ public class Constants {
     public static final TETile LOCKEDDOORTILE = Tileset.LOCKED_DOOR;
     public static final TETile KEYTILE = Tileset.KEY;
     public static final int EXPLORERADIUS = 3; // maximum 4
+    public static final int GHOSTSPEED = 50; // the smaller, the fastest
 }
